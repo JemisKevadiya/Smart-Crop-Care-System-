@@ -1,0 +1,30 @@
+# Core ML
+tensorflow
+numpy>=1.26
+pandas>=2.2
+scikit-learn
+pillow
+
+# Visualization / notebooks
+matplotlib
+seaborn
+notebook
+
+# Pipeline / config
+dvc
+pyyaml
+python-dotenv
+
+# App / UI
+streamlit
+
+# Chatbot (Gemini)
+google-genai
+
+# Weather API calls
+requests
+
+# Utilities
+tqdm
+
+-e .

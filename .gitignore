@@ -156,6 +156,8 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+crop/
+.crop/
 
 # Spyder project settings
 .spyderproject
@@ -216,3 +218,17 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# DVC-tracked data and model artifacts (keep folder placeholders)
+data/raw/*
+data/interim/*
+data/processed/*
+!data/raw/.gitkeep
+!data/interim/.gitkeep
+!data/processed/.gitkeep
+
+models/*
+!models/.gitkeep
+
+logs/*
+!logs/.gitkeep
