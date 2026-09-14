@@ -1,0 +1,9 @@
+data_ingestion:
+  kaggle_dataset: vipoooool/new-plant-diseases-dataset
+  raw_data_dir: data/raw
+
+data_preparation:
+  raw_data_dir: data/raw/New Plant Diseases Dataset
+  processed_data_dir: data/processed/New Plant Diseases Dataset 50
+  train_sample_ratio: 0.5
+  random_seed: 42

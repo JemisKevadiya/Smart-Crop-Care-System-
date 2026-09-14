@@ -26,5 +26,9 @@ requests
 
 # Utilities
 tqdm
+joblib
+python-box
+ensure
+kagglehub
 
 -e .
