@@ -7,3 +7,17 @@ data_preparation:
   processed_data_dir: data/processed/New Plant Diseases Dataset 50
   train_sample_ratio: 0.5
   random_seed: 42
+
+data_validation:
+  processed_data_dir: data/processed/New Plant Diseases Dataset 50
+  expected_num_classes: 38
+  status_file: data/processed/New Plant Diseases Dataset 50/validation_status.json
+
+data_transformation:
+  processed_data_dir: data/processed/New Plant Diseases Dataset 50
+  class_names_path: models/class_names.npy
+
+model_trainer:
+  model_path: models/best_resnet_model.keras
+  metrics_path: models/metrics.json
+  log_dir: logs
