@@ -1,0 +1,7 @@
+[theme]
+base = "light"
+primaryColor = "#2e7d32"
+
+[server]
+# Matches src/disease_detection/preprocessing.py MAX_FILE_BYTES (15 MB).
+maxUploadSize = 15

@@ -1,0 +1,29 @@
+{
+  "seed": 42,
+  "ratios": {
+    "train": 0.8,
+    "val": 0.1,
+    "test": 0.1
+  },
+  "images_in_pool": 52714,
+  "exact_duplicates_dropped": 5,
+  "images_after_dedup": 52709,
+  "num_groups": 33557,
+  "largest_group": 14,
+  "split_sizes": {
+    "train": 42114,
+    "val": 5304,
+    "test": 5291
+  },
+  "split_fractions": {
+    "train": 0.799,
+    "val": 0.1006,
+    "test": 0.1004
+  },
+  "supplied_test_images_excluded": 33,
+  "supplied_test_twin_splits": {
+    "train": 26,
+    "test": 4,
+    "val": 3
+  }
+}

@@ -1,0 +1,266 @@
+{
+  "dataset_dir": "C:\\Users\\H P\\Desktop\\Study\\7 - Sem\\Project\\new smart crop care\\Dataset\\raw",
+  "total_files": 52747,
+  "readable_images": 52747,
+  "split_totals": {
+    "test": 33,
+    "train": 35145,
+    "valid": 17569
+  },
+  "num_classes": {
+    "test": 0,
+    "train": 38,
+    "valid": 38
+  },
+  "images_per_class": {
+    "test": {
+      "null": 33
+    },
+    "train": {
+      "Apple___Apple_scab": 1008,
+      "Apple___Black_rot": 994,
+      "Apple___Cedar_apple_rust": 880,
+      "Apple___healthy": 1004,
+      "Blueberry___healthy": 908,
+      "Cherry_(including_sour)___Powdery_mildew": 842,
+      "Cherry_(including_sour)___healthy": 913,
+      "Corn_(maize)___Cercospora_leaf_spot Gray_leaf_spot": 817,
+      "Corn_(maize)___Common_rust_": 954,
+      "Corn_(maize)___Northern_Leaf_Blight": 954,
+      "Corn_(maize)___healthy": 930,
+      "Grape___Black_rot": 944,
+      "Grape___Esca_(Black_Measles)": 960,
+      "Grape___Leaf_blight_(Isariopsis_Leaf_Spot)": 861,
+      "Grape___healthy": 846,
+      "Orange___Haunglongbing_(Citrus_greening)": 1005,
+      "Peach___Bacterial_spot": 919,
+      "Peach___healthy": 864,
+      "Pepper,_bell___Bacterial_spot": 956,
+      "Pepper,_bell___healthy": 994,
+      "Potato___Early_blight": 970,
+      "Potato___Late_blight": 970,
+      "Potato___healthy": 912,
+      "Raspberry___healthy": 890,
+      "Soybean___healthy": 1011,
+      "Squash___Powdery_mildew": 868,
+      "Strawberry___Leaf_scorch": 887,
+      "Strawberry___healthy": 912,
+      "Tomato___Bacterial_spot": 851,
+      "Tomato___Early_blight": 960,
+      "Tomato___Late_blight": 926,
+      "Tomato___Leaf_Mold": 941,
+      "Tomato___Septoria_leaf_spot": 872,
+      "Tomato___Spider_mites Two-spotted_spider_mite": 870,
+      "Tomato___Target_Spot": 914,
+      "Tomato___Tomato_Yellow_Leaf_Curl_Virus": 980,
+      "Tomato___Tomato_mosaic_virus": 895,
+      "Tomato___healthy": 963
+    },
+    "valid": {
+      "Apple___Apple_scab": 504,
+      "Apple___Black_rot": 497,
+      "Apple___Cedar_apple_rust": 440,
+      "Apple___healthy": 502,
+      "Blueberry___healthy": 454,
+      "Cherry_(including_sour)___Powdery_mildew": 421,
+      "Cherry_(including_sour)___healthy": 456,
+      "Corn_(maize)___Cercospora_leaf_spot Gray_leaf_spot": 407,
+      "Corn_(maize)___Common_rust_": 477,
+      "Corn_(maize)___Northern_Leaf_Blight": 477,
+      "Corn_(maize)___healthy": 465,
+      "Grape___Black_rot": 472,
+      "Grape___Esca_(Black_Measles)": 480,
+      "Grape___Leaf_blight_(Isariopsis_Leaf_Spot)": 430,
+      "Grape___healthy": 423,
+      "Orange___Haunglongbing_(Citrus_greening)": 503,
+      "Peach___Bacterial_spot": 459,
+      "Peach___healthy": 432,
+      "Pepper,_bell___Bacterial_spot": 478,
+      "Pepper,_bell___healthy": 497,
+      "Potato___Early_blight": 485,
+      "Potato___Late_blight": 485,
+      "Potato___healthy": 456,
+      "Raspberry___healthy": 445,
+      "Soybean___healthy": 505,
+      "Squash___Powdery_mildew": 434,
+      "Strawberry___Leaf_scorch": 444,
+      "Strawberry___healthy": 456,
+      "Tomato___Bacterial_spot": 425,
+      "Tomato___Early_blight": 480,
+      "Tomato___Late_blight": 463,
+      "Tomato___Leaf_Mold": 470,
+      "Tomato___Septoria_leaf_spot": 436,
+      "Tomato___Spider_mites Two-spotted_spider_mite": 435,
+      "Tomato___Target_Spot": 457,
+      "Tomato___Tomato_Yellow_Leaf_Curl_Virus": 490,
+      "Tomato___Tomato_mosaic_virus": 448,
+      "Tomato___healthy": 481
+    }
+  },
+  "classes_only_in_train": [],
+  "classes_only_in_valid": [],
+  "extensions": {
+    ".JPG": 50934,
+    ".jpg": 1813
+  },
+  "decoded_formats": {
+    "JPEG": 52747
+  },
+  "colour_modes": {
+    "RGB": 52747
+  },
+  "dimensions": {
+    "256x256": 52747
+  },
+  "file_size_bytes": {
+    "min": 3373,
+    "median": 16644,
+    "max": 30721,
+    "total_mb": 857.1
+  },
+  "corrupted": [],
+  "zero_byte_files": [],
+  "non_image_files": [],
+  "extension_format_mismatch": [],
+  "exact_duplicates": {
+    "groups": 38,
+    "files_involved": 76,
+    "redundant_copies": 38,
+    "within_same_class_and_split": 4,
+    "spanning_splits": 34,
+    "spanning_classes": 0,
+    "examples": {
+      "cross_class": [],
+      "cross_split": [
+        [
+          "test/AppleCedarRust1.JPG",
+          "valid/Apple___Cedar_apple_rust/0cd24b0c-0a9d-483f-8734-5c08988e029f___FREC_C.Rust 3762_newPixel25.JPG"
+        ],
+        [
+          "test/AppleCedarRust2.JPG",
+          "valid/Apple___Cedar_apple_rust/0ce943e7-3fed-41cb-8430-0e0f54ff2bc4___FREC_C.Rust 0014_180deg.JPG"
+        ],
+        [
+          "test/AppleCedarRust3.JPG",
+          "valid/Apple___Cedar_apple_rust/0fbdccdc-fb96-475a-92bb-65734592c895___FREC_C.Rust 3619_180deg.JPG"
+        ],
+        [
+          "test/AppleCedarRust4.JPG",
+          "valid/Apple___Cedar_apple_rust/1e099d8e-b40c-4cf3-bb52-4e77b5a2dc69___FREC_C.Rust 0155.JPG"
+        ],
+        [
+          "test/AppleScab1.JPG",
+          "valid/Apple___Apple_scab/0a5e9323-dbad-432d-ac58-d291718345d9___FREC_Scab 3417.JPG"
+        ],
+        [
+          "test/AppleScab2.JPG",
+          "valid/Apple___Apple_scab/2a800c84-902e-4aa8-af13-4e020d6f17dd___FREC_Scab 3124.JPG"
+        ],
+        [
+          "test/AppleScab3.JPG",
+          "valid/Apple___Apple_scab/2f668a95-80ab-40ac-98ef-657bd85b668b___FREC_Scab 3247_270deg.JPG"
+        ],
+        [
+          "test/CornCommonRust1.JPG",
+          "valid/Corn_(maize)___Common_rust_/RS_Rust 1564_flipLR.JPG"
+        ],
+        [
+          "test/CornCommonRust2.JPG",
+          "valid/Corn_(maize)___Common_rust_/RS_Rust 1585_flipLR.JPG"
+        ],
+        [
+          "test/CornCommonRust3.JPG",
+          "valid/Corn_(maize)___Common_rust_/RS_Rust 1663.JPG"
+        ]
+      ]
+    }
+  },
+  "near_duplicates_same_phash": {
+    "groups": 41,
+    "files_involved": 83,
+    "redundant_copies": 42,
+    "within_same_class_and_split": 22,
+    "spanning_splits": 19,
+    "spanning_classes": 0,
+    "examples": {
+      "cross_class": [],
+      "cross_split": [
+        [
+          "test/PotatoHealthy1.JPG",
+          "train/Potato___healthy/0b3e5032-8ae8-49ac-8157-a1cac3df01dd___RS_HL 1817_newGGR.JPG"
+        ],
+        [
+          "train/Apple___Apple_scab/ab7d0d06-b45c-4472-a708-c2a1d65ee748___FREC_Scab 3152_new30degFlipLR.JPG",
+          "valid/Apple___Apple_scab/08c42d78-aa7b-4106-b0c1-b260f898dcba___FREC_Scab 3151_new30degFlipLR.JPG"
+        ],
+        [
+          "train/Apple___Cedar_apple_rust/4e6676b6-154c-4f7d-a355-bcc00a397c3d___FREC_C.Rust 9853.JPG",
+          "valid/Apple___Cedar_apple_rust/4e6676b6-154c-4f7d-a355-bcc00a397c3d___FREC_C.Rust 9853_newGRR.JPG"
+        ],
+        [
+          "train/Apple___Cedar_apple_rust/94d6b99f-2ac4-4a88-823f-3c607358d057___FREC_C.Rust 9826.JPG",
+          "valid/Apple___Cedar_apple_rust/94d6b99f-2ac4-4a88-823f-3c607358d057___FREC_C.Rust 9826_newGRR.JPG"
+        ],
+        [
+          "train/Apple___Cedar_apple_rust/9d03ec86-ab87-4193-8589-9cfeada9fe70___FREC_C.Rust 4442.JPG",
+          "valid/Apple___Cedar_apple_rust/9d03ec86-ab87-4193-8589-9cfeada9fe70___FREC_C.Rust 4442_newGRR.JPG"
+        ],
+        [
+          "train/Apple___Cedar_apple_rust/a88eb7c4-930a-448e-923e-bef22327fe25___FREC_C.Rust 0044.JPG",
+          "valid/Apple___Cedar_apple_rust/a88eb7c4-930a-448e-923e-bef22327fe25___FREC_C.Rust 0044_newGRR.JPG"
+        ],
+        [
+          "train/Apple___Cedar_apple_rust/dec47754-abfe-496b-a310-47d1fbb077ba___FREC_C.Rust 9910.JPG",
+          "valid/Apple___Cedar_apple_rust/dec47754-abfe-496b-a310-47d1fbb077ba___FREC_C.Rust 9910_newGRR.JPG"
+        ],
+        [
+          "train/Potato___healthy/142fb983-2166-4a0f-b99b-a6c21e99987e___RS_HL 5398_newGGR.JPG",
+          "valid/Potato___healthy/142fb983-2166-4a0f-b99b-a6c21e99987e___RS_HL 5398.JPG"
+        ],
+        [
+          "train/Potato___healthy/163ada72-4288-4f85-a3c1-feed23c8d1de___RS_HL 1940.JPG",
+          "valid/Potato___healthy/163ada72-4288-4f85-a3c1-feed23c8d1de___RS_HL 1940_newGGR.JPG"
+        ],
+        [
+          "train/Potato___healthy/22322780-95b4-4b45-b626-26b22965d55e___RS_HL 1880.JPG",
+          "valid/Potato___healthy/22322780-95b4-4b45-b626-26b22965d55e___RS_HL 1880_newGGR.JPG"
+        ]
+      ]
+    }
+  },
+  "test_files": [
+    "test/AppleCedarRust1.JPG",
+    "test/AppleCedarRust2.JPG",
+    "test/AppleCedarRust3.JPG",
+    "test/AppleCedarRust4.JPG",
+    "test/AppleScab1.JPG",
+    "test/AppleScab2.JPG",
+    "test/AppleScab3.JPG",
+    "test/CornCommonRust1.JPG",
+    "test/CornCommonRust2.JPG",
+    "test/CornCommonRust3.JPG",
+    "test/PotatoEarlyBlight1.JPG",
+    "test/PotatoEarlyBlight2.JPG",
+    "test/PotatoEarlyBlight3.JPG",
+    "test/PotatoEarlyBlight4.JPG",
+    "test/PotatoEarlyBlight5.JPG",
+    "test/PotatoHealthy1.JPG",
+    "test/PotatoHealthy2.JPG",
+    "test/TomatoEarlyBlight1.JPG",
+    "test/TomatoEarlyBlight2.JPG",
+    "test/TomatoEarlyBlight3.JPG",
+    "test/TomatoEarlyBlight4.JPG",
+    "test/TomatoEarlyBlight5.JPG",
+    "test/TomatoEarlyBlight6.JPG",
+    "test/TomatoHealthy1.JPG",
+    "test/TomatoHealthy2.JPG",
+    "test/TomatoHealthy3.JPG",
+    "test/TomatoHealthy4.JPG",
+    "test/TomatoYellowCurlVirus1.JPG",
+    "test/TomatoYellowCurlVirus2.JPG",
+    "test/TomatoYellowCurlVirus3.JPG",
+    "test/TomatoYellowCurlVirus4.JPG",
+    "test/TomatoYellowCurlVirus5.JPG",
+    "test/TomatoYellowCurlVirus6.JPG"
+  ]
+}

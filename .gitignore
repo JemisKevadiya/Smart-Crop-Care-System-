@@ -216,3 +216,20 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# ---------------------------------------------------------------------------
+# Smart Crop Care
+# ---------------------------------------------------------------------------
+# Raw dataset (public Kaggle download, ~860 MB) - see README for setup
+Dataset/
+
+# Runtime logs
+logs/
+
+# Training resume state (only needed to continue an interrupted run)
+models/resnet50/training_state/
+models/resnet50/smoke_test/
+
+# Legacy files from the previous implementation (not used by the current code)
+config/
+src/utils/

@@ -1,0 +1,12 @@
+tensorflow>=2.16
+numpy
+pandas
+pillow
+imagehash
+scikit-learn
+matplotlib
+nbformat
+nbconvert
+ipykernel
+pytest
+streamlit

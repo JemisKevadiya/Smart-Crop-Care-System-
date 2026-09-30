@@ -1,0 +1,736 @@
+{
+  "confidence_threshold": 0.8,
+  "threshold_analysis": {
+    "table": [
+      {
+        "threshold": 0.0,
+        "flagged_low_conf": 0.0,
+        "accuracy_when_confident": 0.9771870286576169,
+        "errors_caught": 0.0,
+        "correct_flagged": 0.0
+      },
+      {
+        "threshold": 0.5,
+        "flagged_low_conf": 0.002450980392156854,
+        "accuracy_when_confident": 0.9786429786429787,
+        "errors_caught": 0.06611570247933884,
+        "correct_flagged": 0.0009646922631680494
+      },
+      {
+        "threshold": 0.6,
+        "flagged_low_conf": 0.012820512820512775,
+        "accuracy_when_confident": 0.98414820473644,
+        "errors_caught": 0.3140495867768595,
+        "correct_flagged": 0.005788153579008296
+      },
+      {
+        "threshold": 0.7,
+        "flagged_low_conf": 0.020173453996983448,
+        "accuracy_when_confident": 0.9873003655955359,
+        "errors_caught": 0.45454545454545453,
+        "correct_flagged": 0.010032799536947714
+      },
+      {
+        "threshold": 0.8,
+        "flagged_low_conf": 0.03242835595776772,
+        "accuracy_when_confident": 0.9918160561184723,
+        "errors_caught": 0.6528925619834711,
+        "correct_flagged": 0.017943276094925718
+      },
+      {
+        "threshold": 0.9,
+        "flagged_low_conf": 0.05015082956259431,
+        "accuracy_when_confident": 0.9938467645891227,
+        "errors_caught": 0.743801652892562,
+        "correct_flagged": 0.033957167663515336
+      },
+      {
+        "threshold": 0.95,
+        "flagged_low_conf": 0.07070135746606332,
+        "accuracy_when_confident": 0.995739500912964,
+        "errors_caught": 0.8264462809917356,
+        "correct_flagged": 0.05305807447424272
+      }
+    ],
+    "val_accuracy": 0.9771870286576169,
+    "median_conf_correct": 0.9999946355819702,
+    "median_conf_wrong": 0.7357187867164612
+  },
+  "consistency": {
+    "images": 64,
+    "max_abs_prob_diff": 1.6987323760986328e-06,
+    "identical_top1": true
+  },
+  "per_class_test": {
+    "images": 38,
+    "correct": 37,
+    "low_confidence": 1,
+    "median_ms_per_image": 264.66035000339616,
+    "results": [
+      {
+        "true": "Apple___Apple_scab",
+        "predicted": "Apple___Apple_scab",
+        "confidence": 1.0,
+        "correct": true,
+        "is_confident": true
+      },
+      {
+        "true": "Apple___Black_rot",
+        "predicted": "Apple___Black_rot",
+        "confidence": 1.0,
+        "correct": true,
+        "is_confident": true
+      },
+      {
+        "true": "Apple___Cedar_apple_rust",
+        "predicted": "Apple___Cedar_apple_rust",
+        "confidence": 0.999,
+        "correct": true,
+        "is_confident": true
+      },
+      {
+        "true": "Apple___healthy",
+        "predicted": "Apple___healthy",
+        "confidence": 0.9994,
+        "correct": true,
+        "is_confident": true
+      },
+      {
+        "true": "Blueberry___healthy",
+        "predicted": "Blueberry___healthy",
+        "confidence": 1.0,
+        "correct": true,
+        "is_confident": true
+      },
+      {
+        "true": "Cherry_(including_sour)___Powdery_mildew",
+        "predicted": "Cherry_(including_sour)___Powdery_mildew",
+        "confidence": 0.9997,
+        "correct": true,
+        "is_confident": true
+      },
+      {
+        "true": "Cherry_(including_sour)___healthy",
+        "predicted": "Cherry_(including_sour)___healthy",
+        "confidence": 1.0,
+        "correct": true,
+        "is_confident": true
+      },
+      {
+        "true": "Corn_(maize)___Cercospora_leaf_spot Gray_leaf_spot",
+        "predicted": "Corn_(maize)___Cercospora_leaf_spot Gray_leaf_spot",
+        "confidence": 0.9988,
+        "correct": true,
+        "is_confident": true
+      },
+      {
+        "true": "Corn_(maize)___Common_rust_",
+        "predicted": "Corn_(maize)___Common_rust_",
+        "confidence": 1.0,
+        "correct": true,
+        "is_confident": true
+      },
+      {
+        "true": "Corn_(maize)___Northern_Leaf_Blight",
+        "predicted": "Corn_(maize)___Northern_Leaf_Blight",
+        "confidence": 1.0,
+        "correct": true,
+        "is_confident": true
+      },
+      {
+        "true": "Corn_(maize)___healthy",
+        "predicted": "Corn_(maize)___healthy",
+        "confidence": 1.0,
+        "correct": true,
+        "is_confident": true
+      },
+      {
+        "true": "Grape___Black_rot",
+        "predicted": "Grape___Black_rot",
+        "confidence": 1.0,
+        "correct": true,
+        "is_confident": true
+      },
+      {
+        "true": "Grape___Esca_(Black_Measles)",
+        "predicted": "Grape___Esca_(Black_Measles)",
+        "confidence": 1.0,
+        "correct": true,
+        "is_confident": true
+      },
+      {
+        "true": "Grape___Leaf_blight_(Isariopsis_Leaf_Spot)",
+        "predicted": "Grape___Leaf_blight_(Isariopsis_Leaf_Spot)",
+        "confidence": 1.0,
+        "correct": true,
+        "is_confident": true
+      },
+      {
+        "true": "Grape___healthy",
+        "predicted": "Grape___healthy",
+        "confidence": 1.0,
+        "correct": true,
+        "is_confident": true
+      },
+      {
+        "true": "Orange___Haunglongbing_(Citrus_greening)",
+        "predicted": "Orange___Haunglongbing_(Citrus_greening)",
+        "confidence": 1.0,
+        "correct": true,
+        "is_confident": true
+      },
+      {
+        "true": "Peach___Bacterial_spot",
+        "predicted": "Peach___Bacterial_spot",
+        "confidence": 1.0,
+        "correct": true,
+        "is_confident": true
+      },
+      {
+        "true": "Peach___healthy",
+        "predicted": "Peach___healthy",
+        "confidence": 1.0,
+        "correct": true,
+        "is_confident": true
+      },
+      {
+        "true": "Pepper,_bell___Bacterial_spot",
+        "predicted": "Pepper,_bell___Bacterial_spot",
+        "confidence": 0.9995,
+        "correct": true,
+        "is_confident": true
+      },
+      {
+        "true": "Pepper,_bell___healthy",
+        "predicted": "Pepper,_bell___healthy",
+        "confidence": 1.0,
+        "correct": true,
+        "is_confident": true
+      },
+      {
+        "true": "Potato___Early_blight",
+        "predicted": "Potato___Early_blight",
+        "confidence": 1.0,
+        "correct": true,
+        "is_confident": true
+      },
+      {
+        "true": "Potato___Late_blight",
+        "predicted": "Potato___Late_blight",
+        "confidence": 0.997,
+        "correct": true,
+        "is_confident": true
+      },
+      {
+        "true": "Potato___healthy",
+        "predicted": "Potato___healthy",
+        "confidence": 1.0,
+        "correct": true,
+        "is_confident": true
+      },
+      {
+        "true": "Raspberry___healthy",
+        "predicted": "Raspberry___healthy",
+        "confidence": 1.0,
+        "correct": true,
+        "is_confident": true
+      },
+      {
+        "true": "Soybean___healthy",
+        "predicted": "Soybean___healthy",
+        "confidence": 1.0,
+        "correct": true,
+        "is_confident": true
+      },
+      {
+        "true": "Squash___Powdery_mildew",
+        "predicted": "Squash___Powdery_mildew",
+        "confidence": 1.0,
+        "correct": true,
+        "is_confident": true
+      },
+      {
+        "true": "Strawberry___Leaf_scorch",
+        "predicted": "Strawberry___Leaf_scorch",
+        "confidence": 1.0,
+        "correct": true,
+        "is_confident": true
+      },
+      {
+        "true": "Strawberry___healthy",
+        "predicted": "Strawberry___healthy",
+        "confidence": 1.0,
+        "correct": true,
+        "is_confident": true
+      },
+      {
+        "true": "Tomato___Bacterial_spot",
+        "predicted": "Tomato___Bacterial_spot",
+        "confidence": 0.997,
+        "correct": true,
+        "is_confident": true
+      },
+      {
+        "true": "Tomato___Early_blight",
+        "predicted": "Tomato___Late_blight",
+        "confidence": 0.9058,
+        "correct": false,
+        "is_confident": true
+      },
+      {
+        "true": "Tomato___Late_blight",
+        "predicted": "Tomato___Late_blight",
+        "confidence": 0.9832,
+        "correct": true,
+        "is_confident": true
+      },
+      {
+        "true": "Tomato___Leaf_Mold",
+        "predicted": "Tomato___Leaf_Mold",
+        "confidence": 0.9999,
+        "correct": true,
+        "is_confident": true
+      },
+      {
+        "true": "Tomato___Septoria_leaf_spot",
+        "predicted": "Tomato___Septoria_leaf_spot",
+        "confidence": 0.9998,
+        "correct": true,
+        "is_confident": true
+      },
+      {
+        "true": "Tomato___Spider_mites Two-spotted_spider_mite",
+        "predicted": "Tomato___Spider_mites Two-spotted_spider_mite",
+        "confidence": 0.9999,
+        "correct": true,
+        "is_confident": true
+      },
+      {
+        "true": "Tomato___Target_Spot",
+        "predicted": "Tomato___Target_Spot",
+        "confidence": 0.7741,
+        "correct": true,
+        "is_confident": false
+      },
+      {
+        "true": "Tomato___Tomato_Yellow_Leaf_Curl_Virus",
+        "predicted": "Tomato___Tomato_Yellow_Leaf_Curl_Virus",
+        "confidence": 1.0,
+        "correct": true,
+        "is_confident": true
+      },
+      {
+        "true": "Tomato___Tomato_mosaic_virus",
+        "predicted": "Tomato___Tomato_mosaic_virus",
+        "confidence": 0.9999,
+        "correct": true,
+        "is_confident": true
+      },
+      {
+        "true": "Tomato___healthy",
+        "predicted": "Tomato___healthy",
+        "confidence": 1.0,
+        "correct": true,
+        "is_confident": true
+      }
+    ]
+  },
+  "supplied_test_images": {
+    "images": 33,
+    "correct": 32,
+    "results": [
+      {
+        "file": "AppleCedarRust1.JPG",
+        "true": "Apple___Cedar_apple_rust",
+        "predicted": "Apple___Cedar_apple_rust",
+        "confidence": 1.0,
+        "correct": true,
+        "twin_split": "train"
+      },
+      {
+        "file": "AppleCedarRust2.JPG",
+        "true": "Apple___Cedar_apple_rust",
+        "predicted": "Apple___Cedar_apple_rust",
+        "confidence": 1.0,
+        "correct": true,
+        "twin_split": "train"
+      },
+      {
+        "file": "AppleCedarRust3.JPG",
+        "true": "Apple___Cedar_apple_rust",
+        "predicted": "Apple___Cedar_apple_rust",
+        "confidence": 0.7344,
+        "correct": true,
+        "twin_split": "train"
+      },
+      {
+        "file": "AppleCedarRust4.JPG",
+        "true": "Apple___Cedar_apple_rust",
+        "predicted": "Apple___Cedar_apple_rust",
+        "confidence": 1.0,
+        "correct": true,
+        "twin_split": "train"
+      },
+      {
+        "file": "AppleScab1.JPG",
+        "true": "Apple___Apple_scab",
+        "predicted": "Apple___Apple_scab",
+        "confidence": 0.9814,
+        "correct": true,
+        "twin_split": "train"
+      },
+      {
+        "file": "AppleScab2.JPG",
+        "true": "Apple___Apple_scab",
+        "predicted": "Apple___Apple_scab",
+        "confidence": 1.0,
+        "correct": true,
+        "twin_split": "train"
+      },
+      {
+        "file": "AppleScab3.JPG",
+        "true": "Apple___Apple_scab",
+        "predicted": "Apple___Apple_scab",
+        "confidence": 1.0,
+        "correct": true,
+        "twin_split": "train"
+      },
+      {
+        "file": "CornCommonRust1.JPG",
+        "true": "Corn_(maize)___Common_rust_",
+        "predicted": "Corn_(maize)___Common_rust_",
+        "confidence": 1.0,
+        "correct": true,
+        "twin_split": "train"
+      },
+      {
+        "file": "CornCommonRust2.JPG",
+        "true": "Corn_(maize)___Common_rust_",
+        "predicted": "Corn_(maize)___Common_rust_",
+        "confidence": 1.0,
+        "correct": true,
+        "twin_split": "val"
+      },
+      {
+        "file": "CornCommonRust3.JPG",
+        "true": "Corn_(maize)___Common_rust_",
+        "predicted": "Corn_(maize)___Common_rust_",
+        "confidence": 1.0,
+        "correct": true,
+        "twin_split": "train"
+      },
+      {
+        "file": "PotatoEarlyBlight1.JPG",
+        "true": "Potato___Early_blight",
+        "predicted": "Potato___Early_blight",
+        "confidence": 1.0,
+        "correct": true,
+        "twin_split": "train"
+      },
+      {
+        "file": "PotatoEarlyBlight2.JPG",
+        "true": "Potato___Early_blight",
+        "predicted": "Potato___Early_blight",
+        "confidence": 1.0,
+        "correct": true,
+        "twin_split": "train"
+      },
+      {
+        "file": "PotatoEarlyBlight3.JPG",
+        "true": "Potato___Early_blight",
+        "predicted": "Potato___Early_blight",
+        "confidence": 1.0,
+        "correct": true,
+        "twin_split": "train"
+      },
+      {
+        "file": "PotatoEarlyBlight4.JPG",
+        "true": "Potato___Early_blight",
+        "predicted": "Potato___Early_blight",
+        "confidence": 1.0,
+        "correct": true,
+        "twin_split": "train"
+      },
+      {
+        "file": "PotatoEarlyBlight5.JPG",
+        "true": "Potato___Early_blight",
+        "predicted": "Potato___Early_blight",
+        "confidence": 1.0,
+        "correct": true,
+        "twin_split": "train"
+      },
+      {
+        "file": "PotatoHealthy1.JPG",
+        "true": "Potato___healthy",
+        "predicted": "Potato___healthy",
+        "confidence": 1.0,
+        "correct": true,
+        "twin_split": "test"
+      },
+      {
+        "file": "PotatoHealthy2.JPG",
+        "true": "Potato___healthy",
+        "predicted": "Potato___healthy",
+        "confidence": 0.9999,
+        "correct": true,
+        "twin_split": "test"
+      },
+      {
+        "file": "TomatoEarlyBlight1.JPG",
+        "true": "Tomato___Early_blight",
+        "predicted": "Tomato___Early_blight",
+        "confidence": 0.5008,
+        "correct": true,
+        "twin_split": "val"
+      },
+      {
+        "file": "TomatoEarlyBlight2.JPG",
+        "true": "Tomato___Early_blight",
+        "predicted": "Tomato___Early_blight",
+        "confidence": 0.9643,
+        "correct": true,
+        "twin_split": "val"
+      },
+      {
+        "file": "TomatoEarlyBlight3.JPG",
+        "true": "Tomato___Early_blight",
+        "predicted": "Tomato___Spider_mites Two-spotted_spider_mite",
+        "confidence": 0.8935,
+        "correct": false,
+        "twin_split": "train"
+      },
+      {
+        "file": "TomatoEarlyBlight4.JPG",
+        "true": "Tomato___Early_blight",
+        "predicted": "Tomato___Early_blight",
+        "confidence": 0.8168,
+        "correct": true,
+        "twin_split": "train"
+      },
+      {
+        "file": "TomatoEarlyBlight5.JPG",
+        "true": "Tomato___Early_blight",
+        "predicted": "Tomato___Early_blight",
+        "confidence": 0.9963,
+        "correct": true,
+        "twin_split": "test"
+      },
+      {
+        "file": "TomatoEarlyBlight6.JPG",
+        "true": "Tomato___Early_blight",
+        "predicted": "Tomato___Early_blight",
+        "confidence": 0.9969,
+        "correct": true,
+        "twin_split": "train"
+      },
+      {
+        "file": "TomatoHealthy1.JPG",
+        "true": "Tomato___healthy",
+        "predicted": "Tomato___healthy",
+        "confidence": 1.0,
+        "correct": true,
+        "twin_split": "test"
+      },
+      {
+        "file": "TomatoHealthy2.JPG",
+        "true": "Tomato___healthy",
+        "predicted": "Tomato___healthy",
+        "confidence": 1.0,
+        "correct": true,
+        "twin_split": "train"
+      },
+      {
+        "file": "TomatoHealthy3.JPG",
+        "true": "Tomato___healthy",
+        "predicted": "Tomato___healthy",
+        "confidence": 0.9999,
+        "correct": true,
+        "twin_split": "train"
+      },
+      {
+        "file": "TomatoHealthy4.JPG",
+        "true": "Tomato___healthy",
+        "predicted": "Tomato___healthy",
+        "confidence": 1.0,
+        "correct": true,
+        "twin_split": "train"
+      },
+      {
+        "file": "TomatoYellowCurlVirus1.JPG",
+        "true": "Tomato___Tomato_Yellow_Leaf_Curl_Virus",
+        "predicted": "Tomato___Tomato_Yellow_Leaf_Curl_Virus",
+        "confidence": 0.9981,
+        "correct": true,
+        "twin_split": "train"
+      },
+      {
+        "file": "TomatoYellowCurlVirus2.JPG",
+        "true": "Tomato___Tomato_Yellow_Leaf_Curl_Virus",
+        "predicted": "Tomato___Tomato_Yellow_Leaf_Curl_Virus",
+        "confidence": 1.0,
+        "correct": true,
+        "twin_split": "train"
+      },
+      {
+        "file": "TomatoYellowCurlVirus3.JPG",
+        "true": "Tomato___Tomato_Yellow_Leaf_Curl_Virus",
+        "predicted": "Tomato___Tomato_Yellow_Leaf_Curl_Virus",
+        "confidence": 1.0,
+        "correct": true,
+        "twin_split": "train"
+      },
+      {
+        "file": "TomatoYellowCurlVirus4.JPG",
+        "true": "Tomato___Tomato_Yellow_Leaf_Curl_Virus",
+        "predicted": "Tomato___Tomato_Yellow_Leaf_Curl_Virus",
+        "confidence": 1.0,
+        "correct": true,
+        "twin_split": "train"
+      },
+      {
+        "file": "TomatoYellowCurlVirus5.JPG",
+        "true": "Tomato___Tomato_Yellow_Leaf_Curl_Virus",
+        "predicted": "Tomato___Tomato_Yellow_Leaf_Curl_Virus",
+        "confidence": 1.0,
+        "correct": true,
+        "twin_split": "train"
+      },
+      {
+        "file": "TomatoYellowCurlVirus6.JPG",
+        "true": "Tomato___Tomato_Yellow_Leaf_Curl_Virus",
+        "predicted": "Tomato___Tomato_Yellow_Leaf_Curl_Virus",
+        "confidence": 1.0,
+        "correct": true,
+        "twin_split": "train"
+      }
+    ]
+  },
+  "error_handling": {
+    "empty bytes": {
+      "expected": "reject",
+      "outcome": "rejected: The file is empty.",
+      "as_expected": true
+    },
+    "text file": {
+      "expected": "reject",
+      "outcome": "rejected: The file is not a valid image.",
+      "as_expected": true
+    },
+    "truncated JPEG": {
+      "expected": "reject",
+      "outcome": "rejected: The image is corrupted or incomplete (image file is truncated (39 bytes not processed)).",
+      "as_expected": true
+    },
+    "tiny 16x16 image": {
+      "expected": "reject",
+      "outcome": "rejected: The image is too small (16x16); it must be at least 32x32 pixels.",
+      "as_expected": true
+    },
+    "missing file path": {
+      "expected": "reject",
+      "outcome": "rejected: File not found: no_such_file.jpg",
+      "as_expected": true
+    },
+    "GIF format": {
+      "expected": "reject",
+      "outcome": "rejected: Unsupported image format 'GIF'. Use one of: BMP, JPEG, PNG, WEBP.",
+      "as_expected": true
+    },
+    "unsupported type (int)": {
+      "expected": "reject",
+      "outcome": "rejected: Unsupported input type: int",
+      "as_expected": true
+    },
+    "PNG with alpha (RGBA)": {
+      "expected": "accept",
+      "outcome": "predicted Apple___Apple_scab (0.969)",
+      "as_expected": true
+    },
+    "grayscale JPEG": {
+      "expected": "accept",
+      "outcome": "predicted Apple___healthy (0.993)",
+      "as_expected": true
+    },
+    "non-square 1200x900 JPEG": {
+      "expected": "accept",
+      "outcome": "predicted Apple___Apple_scab (0.999)",
+      "as_expected": true
+    },
+    "file-like object": {
+      "expected": "accept",
+      "outcome": "predicted Apple___Apple_scab (0.969)",
+      "as_expected": true
+    },
+    "PIL image": {
+      "expected": "accept",
+      "outcome": "predicted Apple___Apple_scab (0.969)",
+      "as_expected": true
+    },
+    "solid grey image": {
+      "expected": "reject",
+      "outcome": "rejected: The image looks blank (almost a single colour). Upload a photo of a leaf.",
+      "as_expected": true
+    },
+    "black image": {
+      "expected": "reject",
+      "outcome": "rejected: The image looks blank (almost a single colour). Upload a photo of a leaf.",
+      "as_expected": true
+    },
+    "solid green image": {
+      "expected": "reject",
+      "outcome": "rejected: The image looks blank (almost a single colour). Upload a photo of a leaf.",
+      "as_expected": true
+    },
+    "missing model file": {
+      "as_expected": true,
+      "outcome": "ModelLoadError: Model file not found: C:\\Users\\H P\\Desktop\\Study\\7 - Sem\\Project\\new smart crop care\\models\\missing.keras. Train it with scripts/train_resnet50.py."
+    }
+  },
+  "non_leaf_inputs": {
+    "random noise": {
+      "predicted": "Tomato___Septoria_leaf_spot",
+      "confidence": 0.9993,
+      "flagged_low_confidence": false
+    },
+    "colour gradient": {
+      "predicted": "Blueberry___healthy",
+      "confidence": 0.4574,
+      "flagged_low_confidence": true
+    },
+    "checkerboard": {
+      "predicted": "Peach___healthy",
+      "confidence": 0.979,
+      "flagged_low_confidence": false
+    }
+  },
+  "example_prediction": {
+    "class_name": "Apple___Apple_scab",
+    "crop": "Apple",
+    "disease": "Apple scab",
+    "is_healthy": false,
+    "confidence": 0.9686274528503418,
+    "is_confident": true,
+    "message": "Apple: Apple scab detected.",
+    "top_k": [
+      {
+        "class_name": "Apple___Apple_scab",
+        "crop": "Apple",
+        "disease": "Apple scab",
+        "probability": 0.9686274528503418
+      },
+      {
+        "class_name": "Tomato___Late_blight",
+        "crop": "Tomato",
+        "disease": "Late blight",
+        "probability": 0.030478792265057564
+      },
+      {
+        "class_name": "Squash___Powdery_mildew",
+        "crop": "Squash",
+        "disease": "Powdery mildew",
+        "probability": 0.0005444599664770067
+      }
+    ],
+    "inference_ms": 282.0
+  }
+}
