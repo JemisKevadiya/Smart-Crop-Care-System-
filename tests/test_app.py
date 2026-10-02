@@ -100,3 +100,16 @@ def test_blank_image_shows_error():
     at.file_uploader[0].upload("blank.png", buf.getvalue(), "image/png").run()
     assert not at.exception
     assert at.error and "blank" in at.error[0].value
+
+
+def test_face_photo_is_rejected_as_not_a_leaf():
+    from matplotlib import cbook
+
+    face = cbook.get_sample_data("grace_hopper.jpg").read()
+    at = _app().run()
+    at.file_uploader[0].upload("face.jpg", face, "image/jpeg").run()
+    assert not at.exception
+    heads = _subheaders(at)
+    assert "Not a supported leaf" in heads
+    assert "Predicted disease" not in heads and "Fertilizer recommendation" not in heads
+    assert "does not look like a leaf" in at.warning[0].value

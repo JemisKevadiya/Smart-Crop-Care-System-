@@ -11,6 +11,9 @@ the prediction and its top candidates but no treatment advice, because
 spraying for the wrong disease wastes money and can harm the crop. Pass
 advise_when_uncertain=True to attach advice for the top candidate anyway
 (it stays flagged as low confidence).
+
+Out-of-scope policy: images that do not resemble the training leaves (faces,
+scenes, other objects) get status "out_of_scope" and never receive advice.
 """
 
 import time
@@ -28,6 +31,7 @@ from src.fertilizer.fertilizer_data import DATA_PATH
 STATUSES = {
     "ok": "Disease identified and advice found.",
     "low_confidence": "Prediction is uncertain; advice withheld.",
+    "out_of_scope": "The image does not look like a leaf of a supported crop.",
     "invalid_image": "The input is not a usable leaf image.",
     "model_error": "The model failed to run.",
     "recommendation_unavailable": "Disease identified, but no advice could be loaded.",
@@ -75,6 +79,9 @@ class CropCareAnalyzer:
         t1 = time.perf_counter()
         timings = {"prediction": round((t1 - t0) * 1000, 1)}
 
+        if not prediction.in_scope:
+            return AnalysisResult("out_of_scope", prediction.message, prediction,
+                                  timings_ms=timings)
         if not prediction.is_confident and not self.advise_when_uncertain:
             return AnalysisResult("low_confidence", prediction.message, prediction,
                                   timings_ms=timings)

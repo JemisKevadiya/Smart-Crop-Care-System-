@@ -1,0 +1,160 @@
+{
+  "method": "mean cosine similarity to 5 nearest reference leaves (ResNet50 gap features)",
+  "reference_images": 2280,
+  "threshold": 0.6,
+  "val": {
+    "images": 1900,
+    "min_score": 0.6415,
+    "rejected": 0,
+    "rejected_rate": 0.0,
+    "accuracy": 0.98
+  },
+  "test": {
+    "images": 380,
+    "min_score": 0.6438,
+    "rejected": 0,
+    "rejected_rate": 0.0,
+    "accuracy": 0.9763
+  },
+  "out_of_scope": {
+    "images": 33,
+    "max_score": 0.5296,
+    "caught": 33,
+    "caught_rate": 1.0,
+    "mean_softmax_confidence": 0.8665,
+    "per_image": {
+      "face_photo": {
+        "score": 0.4143,
+        "confidence": 0.8435
+      },
+      "face_photo_crop0": {
+        "score": 0.4221,
+        "confidence": 0.9287
+      },
+      "face_photo_crop1": {
+        "score": 0.3929,
+        "confidence": 0.9854
+      },
+      "face_photo_crop2": {
+        "score": 0.4504,
+        "confidence": 0.604
+      },
+      "face_photo_crop3": {
+        "score": 0.4366,
+        "confidence": 0.8213
+      },
+      "city_scene": {
+        "score": 0.3781,
+        "confidence": 0.6652
+      },
+      "city_scene_crop0": {
+        "score": 0.3639,
+        "confidence": 0.8884
+      },
+      "city_scene_crop1": {
+        "score": 0.354,
+        "confidence": 0.7053
+      },
+      "city_scene_crop2": {
+        "score": 0.3431,
+        "confidence": 0.9483
+      },
+      "city_scene_crop3": {
+        "score": 0.4,
+        "confidence": 0.8973
+      },
+      "flower_photo": {
+        "score": 0.368,
+        "confidence": 0.9845
+      },
+      "flower_photo_crop0": {
+        "score": 0.3792,
+        "confidence": 0.9707
+      },
+      "flower_photo_crop1": {
+        "score": 0.3524,
+        "confidence": 0.9516
+      },
+      "flower_photo_crop2": {
+        "score": 0.4062,
+        "confidence": 0.6551
+      },
+      "flower_photo_crop3": {
+        "score": 0.3731,
+        "confidence": 0.9669
+      },
+      "cartoon_leaves_banner": {
+        "score": 0.4743,
+        "confidence": 0.9948
+      },
+      "cartoon_leaves_banner_crop0": {
+        "score": 0.4749,
+        "confidence": 0.6519
+      },
+      "cartoon_leaves_banner_crop1": {
+        "score": 0.4752,
+        "confidence": 0.9303
+      },
+      "cartoon_leaves_banner_crop2": {
+        "score": 0.4916,
+        "confidence": 0.7567
+      },
+      "cartoon_leaves_banner_crop3": {
+        "score": 0.4686,
+        "confidence": 0.5868
+      },
+      "plot": {
+        "score": 0.3752,
+        "confidence": 0.9
+      },
+      "plot_crop0": {
+        "score": 0.3988,
+        "confidence": 0.8333
+      },
+      "plot_crop1": {
+        "score": 0.3811,
+        "confidence": 0.9653
+      },
+      "plot_crop2": {
+        "score": 0.3873,
+        "confidence": 0.9831
+      },
+      "plot_crop3": {
+        "score": 0.3986,
+        "confidence": 0.8858
+      },
+      "noise0": {
+        "score": 0.3988,
+        "confidence": 1.0
+      },
+      "noise1": {
+        "score": 0.3954,
+        "confidence": 1.0
+      },
+      "noise2": {
+        "score": 0.3995,
+        "confidence": 1.0
+      },
+      "noise3": {
+        "score": 0.3952,
+        "confidence": 1.0
+      },
+      "noise4": {
+        "score": 0.3938,
+        "confidence": 1.0
+      },
+      "checkerboard": {
+        "score": 0.2951,
+        "confidence": 0.7696
+      },
+      "stripes": {
+        "score": 0.3759,
+        "confidence": 0.5204
+      },
+      "green_noise": {
+        "score": 0.5296,
+        "confidence": 0.9993
+      }
+    }
+  }
+}

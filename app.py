@@ -177,7 +177,9 @@ with st.sidebar:
             "normalized for ResNet50.\n"
             f"4. **Predict** - the model picks one of {facts['num_classes']} crop/disease "
             "classes and reports its confidence.\n"
-            f"5. **Advise** - if confidence is at least {facts['threshold']:.0%}, fertilizer "
+            "5. **Scope check** - the image's features are compared with real training "
+            "leaves; pictures that are not leaves of a supported crop are rejected.\n"
+            f"6. **Advise** - if confidence is at least {facts['threshold']:.0%}, fertilizer "
             "and treatment advice is shown; otherwise the app asks for a clearer photo.")
 
     with st.expander("Model", icon=":material/neurology:"):
@@ -245,8 +247,8 @@ with st.sidebar:
             "- Trained on PlantVillage-style photos of single leaves on plain "
             "backgrounds; field photos may be less accurate.\n"
             "- Only the listed crops and diseases are recognized.\n"
-            "- Photos that are not leaves can still get a confident (wrong) "
-            "prediction; only blank images are rejected.\n"
+            "- Non-leaf images (faces, objects, scenes) are rejected by a feature "
+            "similarity check, but a leaf of an unsupported plant may still pass.\n"
             "- Not a substitute for an expert diagnosis.")
 
     with st.expander("Built with", icon=":material/build:"):
@@ -283,6 +285,18 @@ if result.status == "model_error":
     st.stop()
 
 prediction = result.prediction
+if result.status == "out_of_scope":
+    image_col, message_col = st.columns([1, 1], gap="medium")
+    with image_col:
+        st.subheader("Uploaded image", icon=":material/image:")
+        st.image(uploaded.getvalue(), caption=uploaded.name, width="stretch")
+    with message_col:
+        st.subheader("Not a supported leaf", icon=":material/block:")
+        st.warning(result.message, icon=":material/image_not_supported:")
+        st.caption("No disease or advice is shown, because the model only knows "
+                   "leaves of the supported crops listed in the sidebar.")
+    st.stop()
+
 image_col, result_col = st.columns([1, 1], gap="medium")
 with image_col:
     st.subheader("Uploaded image", icon=":material/image:")

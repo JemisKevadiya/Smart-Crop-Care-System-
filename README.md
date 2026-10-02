@@ -35,6 +35,7 @@ Leaf image
   -> validation (format, size, corrupted/blank check)
   -> centre square crop, resize to 224x224, resnet50.preprocess_input
   -> ResNet50 classifier -> disease + confidence
+  -> scope check: features far from real training leaves -> "not a supported leaf"
   -> confidence >= 80%: fertilizer and treatment lookup
      confidence <  80%: advice withheld, user asked for a clearer photo
 ```
@@ -51,6 +52,19 @@ ModelCheckpoint, EarlyStopping and ReduceLROnPlateau. It was trained on CPU.
 
 **Low-confidence threshold (80%)** was chosen on the validation set: it flags 3.2% of
 images, catches 65% of the model's mistakes, and the remaining predictions are 99.2% accurate.
+
+**Rejecting non-leaf images.** Softmax confidence cannot detect pictures that are not
+leaves: the model must pick one of its 38 classes, and it is often ~100% confident on faces
+or noise. So each image's ResNet50 features (2048-value pooling output) are compared with
+2,280 real training leaves (60 per class); the score is the mean cosine similarity to the
+5 most similar ones. Below **0.60** the image is reported as "not a supported leaf" and no
+disease or advice is shown ([`scripts/build_leaf_reference.py`](scripts/build_leaf_reference.py),
+[`artifacts/reports/leaf_scope_check.json`](artifacts/reports/leaf_scope_check.json)):
+
+| Images | Result |
+|---|---|
+| Real leaves (1,900 validation + 380 test) | 0 rejected (lowest score 0.64) |
+| Non-leaf images (faces, scenes, plots, noise, patterns; 33) | 33 rejected (highest score 0.53), although their mean softmax confidence was 86.7% |
 
 ## Dataset and leakage
 
@@ -126,6 +140,10 @@ the raw dataset is not required.
    ```bash
    python scripts/train_resnet50.py --evaluate
    ```
+4. Rebuild the reference leaves used to reject non-leaf images:
+   ```bash
+   python scripts/build_leaf_reference.py
+   ```
 
 ## Tests
 
@@ -142,8 +160,8 @@ Most tests read images from `Dataset/raw/`, so the dataset must be downloaded fi
 - Trained on PlantVillage-style photos of single leaves on plain backgrounds; field
   photos may be less accurate.
 - Only the 14 crops and 38 classes in the dataset are recognized.
-- Images that are not leaves can still receive a confident (wrong) prediction; only
-  blank images are rejected.
+- Non-leaf images (faces, scenes, noise) are rejected by the scope check, but a leaf of
+  an unsupported plant may still look similar enough to pass.
 - The fertilizer and treatment advice is general guidance based on common
   plant-protection practice and has not been reviewed by an agronomist. Product
   registration and doses vary by region: confirm locally and follow the label.
