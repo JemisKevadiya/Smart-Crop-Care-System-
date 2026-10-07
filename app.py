@@ -1,7 +1,8 @@
-"""Smart Crop Care - Streamlit UI.
+"""Smart Crop Care - Streamlit UI (entry point).
 
-UI only: all image checks, model inference and advice lookup live in
-src/integration (CropCareAnalyzer) and the modules it calls.
+UI only: image checks, model inference and advice lookup live in src/integration
+(CropCareAnalyzer); weather data comes from src/weather and news from src/news. This file holds the
+shared banner and sidebar; the pages are in app_pages/.
 
     streamlit run app.py
 """
@@ -22,19 +23,14 @@ if importlib.util.find_spec("tensorflow") is None:
         icon=":material/error:")
     st.stop()
 
-from src.disease_detection import ModelLoadError  # noqa: E402
 from src.disease_detection.model_loader import load_class_names  # noqa: E402
 from src.disease_detection.predictor import parse_class_name  # noqa: E402
-from src.disease_detection.preprocessing import ALLOWED_FORMATS  # noqa: E402
 from src.disease_detection.predictor import DEFAULT_CONFIDENCE_THRESHOLD  # noqa: E402
-from src.fertilizer import FertilizerDataError, get_recommendation  # noqa: E402
-from src.fertilizer import load_recommendations  # noqa: E402
-from src.integration import CropCareAnalyzer  # noqa: E402
+from src.fertilizer import FertilizerDataError, load_recommendations  # noqa: E402
 from src.model.resnet50 import TRAIN  # noqa: E402
 from src.preprocessing import config  # noqa: E402
 from tensorflow import __version__ as tf_version  # noqa: E402
 
-UPLOAD_TYPES = ["jpg", "jpeg", "png", "bmp", "webp"]
 METRICS_PATH = config.ROOT / "artifacts" / "reports" / "model_metrics.json"
 SPLIT_REPORT_PATH = config.SPLITS_DIR / "split_report.json"
 HERO_IMAGE = config.ROOT / "assets" / "hero_leaves.jpg"  # scripts/make_hero_image.py
@@ -74,19 +70,9 @@ def hero_html():
 </style>
 <div class="scc-hero">
     <h1>Smart Crop Care</h1>
-    <p>AI-powered plant disease detection with fertilizer and treatment advice</p>
+    <p>AI-powered plant disease detection, treatment advice, local weather, farmer news and a farming assistant</p>
 </div>
 """
-
-
-@st.cache_resource(show_spinner="Loading the disease detection model...")
-def get_analyzer():
-    return CropCareAnalyzer()
-
-
-@st.cache_data(max_entries=32, show_spinner=False)
-def analyze(image_bytes, _analyzer):
-    return _analyzer.analyze(image_bytes)
 
 
 @st.cache_data
@@ -130,28 +116,13 @@ def project_facts():
     }
 
 
-def show_advice(rec):
-    """Fertilizer and treatment sections for a found Recommendation."""
-    st.subheader("Fertilizer recommendation", icon=":material/compost:")
-    with st.container(border=True):
-        st.markdown(rec.fertilizer)
-
-    st.subheader("Treatment recommendation", icon=":material/medication:")
-    with st.container(border=True):
-        st.markdown(f"**What to do:** {rec.treatment}")
-        st.markdown(f":material/eco: **Eco-friendly option:** {rec.eco_friendly_treatment}")
-        st.markdown(f":material/science: **Chemical option:** {rec.chemical_treatment}")
-        if rec.notes:
-            st.caption(rec.notes)
-    st.caption(rec.disclaimer)
-
-
 # --- Sidebar ---------------------------------------------------------------------
 with st.sidebar:
     st.header("Features", icon=":material/apps:")
     st.markdown(":material/eco: **Disease detection & advice** :green-badge[Active]")
-    st.markdown(":material/partly_cloudy_day: **Weather** :gray-badge[Upcoming]")
-    st.markdown(":material/chat: **Chatbot** :gray-badge[Upcoming]")
+    st.markdown(":material/partly_cloudy_day: **Weather** :green-badge[Active]")
+    st.markdown(":material/newspaper: **Live farmer news** :green-badge[Active]")
+    st.markdown(":material/smart_toy: **Agriculture Assistant** :green-badge[Active]")
 
     facts = project_facts()
     test = facts["evaluation"].get("test")
@@ -256,85 +227,18 @@ with st.sidebar:
                     f"- Streamlit {st.__version__}\n"
                     "- Pillow, NumPy, pandas, scikit-learn")
 
-# --- Main --------------------------------------------------------------------------
+# --- Pages -------------------------------------------------------------------------
+page = st.navigation(
+    [
+        st.Page("app_pages/home.py", title="Home", icon=":material/home:", default=True),
+        st.Page("app_pages/disease_detection.py", title="Disease detection",
+                icon=":material/eco:"),
+        st.Page("app_pages/weather.py", title="Weather", icon=":material/partly_cloudy_day:"),
+        st.Page("app_pages/news.py", title="Farmer news", icon=":material/newspaper:"),
+        st.Page("app_pages/assistant.py", title="Agriculture Assistant",
+                icon=":material/smart_toy:"),
+    ],
+    position="top",
+)
 st.html(hero_html())
-st.caption("Upload a clear photo of a single leaf to check it for disease and get "
-           "fertilizer and treatment advice.")
-
-uploaded = st.file_uploader(
-    "Upload leaf image", type=UPLOAD_TYPES,
-    help=f"Supported formats: {', '.join(sorted(ALLOWED_FORMATS))}. Max 15 MB.")
-
-if uploaded is None:
-    st.stop()
-
-try:
-    analyzer = get_analyzer()
-except ModelLoadError as exc:
-    st.error(f"The disease detection model could not be loaded. {exc}", icon=":material/error:")
-    st.stop()
-
-with st.spinner("Analyzing leaf..."):
-    result = analyze(uploaded.getvalue(), analyzer)
-
-if result.status == "invalid_image":
-    st.error(f"This file can't be analyzed: {result.message}", icon=":material/broken_image:")
-    st.stop()
-if result.status == "model_error":
-    st.error(result.message, icon=":material/error:")
-    st.stop()
-
-prediction = result.prediction
-if result.status == "out_of_scope":
-    image_col, message_col = st.columns([1, 1], gap="medium")
-    with image_col:
-        st.subheader("Uploaded image", icon=":material/image:")
-        st.image(uploaded.getvalue(), caption=uploaded.name, width="stretch")
-    with message_col:
-        st.subheader("Not a supported leaf", icon=":material/block:")
-        st.warning(result.message, icon=":material/image_not_supported:")
-        st.caption("No disease or advice is shown, because the model only knows "
-                   "leaves of the supported crops listed in the sidebar.")
-    st.stop()
-
-image_col, result_col = st.columns([1, 1], gap="medium")
-with image_col:
-    st.subheader("Uploaded image", icon=":material/image:")
-    st.image(uploaded.getvalue(), caption=uploaded.name, width="stretch")
-
-with result_col:
-    st.subheader("Predicted disease", icon=":material/coronavirus:")
-    st.markdown(f"### {prediction.disease}")
-    st.markdown(f"Crop: **{prediction.crop}**")
-    if result.recommendation and result.recommendation.category:
-        color = "green" if prediction.is_healthy else "orange"
-        st.badge(result.recommendation.category, color=color)
-
-    st.subheader("Confidence", icon=":material/speed:")
-    st.metric("Model confidence", f"{prediction.confidence:.1%}", label_visibility="collapsed")
-    st.progress(prediction.confidence)
-
-with st.expander("Other possibilities", icon=":material/format_list_numbered:"):
-    for candidate in prediction.top_k:
-        st.markdown(f"{candidate.crop} - {candidate.disease}: **{candidate.probability:.1%}**")
-
-if result.status == "low_confidence":
-    st.warning(prediction.message, icon=":material/help:")
-    st.caption("Advice is hidden because the prediction is uncertain; treating the wrong "
-               "disease can waste money and harm the crop.")
-    if st.toggle("Show advice for the most likely disease anyway", key="advise_uncertain"):
-        rec = get_recommendation(prediction)
-        if rec.found:
-            show_advice(rec)
-        else:
-            st.error(rec.message, icon=":material/error:")
-elif result.status == "recommendation_unavailable":
-    st.success(prediction.message, icon=":material/check_circle:")
-    st.error(result.recommendation.message if result.recommendation else result.message,
-             icon=":material/error:")
-else:
-    if prediction.is_healthy:
-        st.success(prediction.message, icon=":material/check_circle:")
-    else:
-        st.info(prediction.message, icon=":material/coronavirus:")
-    show_advice(result.recommendation)
+page.run()

@@ -10,3 +10,5 @@ nbconvert
 ipykernel
 pytest
 streamlit
+requests
+langchain-groq
