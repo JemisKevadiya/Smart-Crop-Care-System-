@@ -233,8 +233,3 @@ models/resnet50/smoke_test/
 # Legacy files from the previous implementation (not used by the current code)
 config/
 src/utils/
-
-# LeafLiteNet resume state and smoke-test runs
-models/lite_cnn/*/training_state/
-models/lite_cnn/*_smoke/
-artifacts/reports/lite_cnn/*_smoke/

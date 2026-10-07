@@ -92,7 +92,7 @@ def plot_curves(history):
     return paths
 
 
-def plot_confusion(cm, class_names, title, path=None):
+def plot_confusion(cm, class_names, title):
     """Row-normalised confusion matrix (recall on the diagonal), counts in cells."""
     norm = cm / cm.sum(axis=1, keepdims=True)
     short = [c.replace("___", " · ").replace("_", " ") for c in class_names]
@@ -108,7 +108,7 @@ def plot_confusion(cm, class_names, title, path=None):
     ax.set_title(title, color=INK, fontweight="bold")
     fig.colorbar(im, ax=ax, fraction=0.03, pad=0.01, label="Share of true class")
     fig.tight_layout()
-    path = path or PLOTS_DIR / "confusion_matrix.png"
+    path = PLOTS_DIR / "confusion_matrix.png"
     fig.savefig(path, dpi=130)
     plt.close(fig)
     return path
