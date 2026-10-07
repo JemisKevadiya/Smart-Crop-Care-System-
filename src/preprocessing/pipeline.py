@@ -26,13 +26,17 @@ AUTOTUNE = tf.data.AUTOTUNE
 IMAGENET_BGR_MEAN = tf.constant([103.939, 116.779, 123.68])
 
 
-def load_image(path):
-    """Read one image file into a float32 [224, 224, 3] tensor in [0, 255]."""
+def decode_image(path):
+    """Read one image file into a uint8 RGB tensor at its stored size."""
     data = tf.io.read_file(path)
     # INTEGER_ACCURATE matches libjpeg's default IDCT (as used by Pillow); TF's
     # default fast IDCT differs by several intensity levels.
-    image = tf.io.decode_jpeg(data, channels=config.CHANNELS, dct_method="INTEGER_ACCURATE")
-    return resize_image(image)
+    return tf.io.decode_jpeg(data, channels=config.CHANNELS, dct_method="INTEGER_ACCURATE")
+
+
+def load_image(path):
+    """Read one image file into a float32 [224, 224, 3] tensor in [0, 255]."""
+    return resize_image(decode_image(path))
 
 
 def resize_image(image):
@@ -64,31 +68,48 @@ def build_augmenter(seed=config.SEED):
 
 
 def make_dataset(split, batch_size=config.BATCH_SIZE, training=None, seed=config.SEED,
-                 manifest=None):
+                 manifest=None, augment=None, preprocess=True, cache=None,
+                 shuffle_buffer=4096):
     """Build a batched, prefetched dataset of (preprocessed image, label index).
 
     `training` defaults to True only for the "train" split: shuffling and
     augmentation are never applied to val/test.
+
+    Options for training elsewhere (e.g. scripts/train_lite_cnn.py on a GPU):
+    `augment=False` leaves augmentation to the model, `preprocess=False` returns
+    images in [0, 255], and `cache` (a file path) stores the decoded images on
+    disk after the first epoch. With a cache, the file order is shuffled once and
+    each epoch is shuffled through a `shuffle_buffer`-sized buffer.
     """
     if training is None:
         training = split == "train"
+    if augment is None:
+        augment = training
     df = load_split(split) if manifest is None else manifest
     paths = [str(config.ROOT / p) for p in df["path"]]
     labels = df["label_idx"].to_numpy("int32")
 
     ds = tf.data.Dataset.from_tensor_slices((paths, labels))
     if training:
-        ds = ds.shuffle(len(paths), seed=seed, reshuffle_each_iteration=True)
-    ds = ds.map(lambda p, y: (load_image(p), y), num_parallel_calls=AUTOTUNE)
+        ds = ds.shuffle(len(paths), seed=seed, reshuffle_each_iteration=cache is None)
+    if cache is None:
+        ds = ds.map(lambda p, y: (load_image(p), y), num_parallel_calls=AUTOTUNE)
+    else:
+        ds = ds.map(lambda p, y: (decode_image(p), y), num_parallel_calls=AUTOTUNE)
+        ds = ds.cache(str(cache))
+        if training:
+            ds = ds.shuffle(shuffle_buffer, seed=seed, reshuffle_each_iteration=True)
+        ds = ds.map(lambda x, y: (resize_image(x), y), num_parallel_calls=AUTOTUNE)
     ds = ds.batch(batch_size, drop_remainder=False)
 
-    if training:
+    if augment:
         augmenter = build_augmenter(seed)
         ds = ds.map(lambda x, y: (augmenter(x, training=True), y), num_parallel_calls=AUTOTUNE)
         ds = ds.map(lambda x, y: (tf.clip_by_value(x, 0.0, 255.0), y),
                     num_parallel_calls=AUTOTUNE)
 
-    ds = ds.map(lambda x, y: (preprocess_input(x), y), num_parallel_calls=AUTOTUNE)
+    if preprocess:
+        ds = ds.map(lambda x, y: (preprocess_input(x), y), num_parallel_calls=AUTOTUNE)
     return ds.prefetch(AUTOTUNE)
 
 
