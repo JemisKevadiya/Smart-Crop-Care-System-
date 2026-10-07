@@ -58,6 +58,19 @@ def _service_error(exc, model_name=None):
     return ChatServiceError(f"{UNAVAILABLE} ({type(exc).__name__}) Please try again later.")
 
 
+def _worth_trying_fallback(exc):
+    """Rate limits, timeouts, server errors and a removed model may work on another model."""
+    try:
+        import groq
+    except ImportError:  # pragma: no cover
+        return isinstance(exc, TimeoutError)
+    if isinstance(exc, (groq.RateLimitError, groq.APITimeoutError, groq.NotFoundError)):
+        return True
+    if isinstance(exc, groq.APIStatusError):
+        return exc.status_code >= 500
+    return isinstance(exc, TimeoutError)
+
+
 def build_messages(question, history=(), context=None, language="English"):
     from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
 
@@ -70,8 +83,11 @@ def build_messages(question, history=(), context=None, language="English"):
 
 
 class AgricultureAssistant:
-    def __init__(self, chat_model=None, api_key=None):
-        """chat_model: any LangChain chat model (tests pass a fake one)."""
+    def __init__(self, chat_model=None, api_key=None, fallback_model=None):
+        """chat_model / fallback_model: any LangChain chat models (tests pass fake ones).
+
+        Without chat_model, the Groq main model and backup model are created from .env.
+        """
         if chat_model is None:
             api_key = api_key or llm.get_api_key()
             if not api_key:
@@ -79,7 +95,12 @@ class AgricultureAssistant:
                     "GROQ_API_KEY is not set. Add GROQ_API_KEY=your_key to the .env file in "
                     "the project folder (free key: console.groq.com), then ask again.")
             chat_model = llm.create_chat_model(api_key)
+            backup = llm.get_fallback_model_name()
+            if fallback_model is None and backup:
+                fallback_model = llm.create_chat_model(api_key, model=backup)
         self.chat_model = chat_model
+        self.fallback_model = fallback_model
+        self.used_fallback = False      # True if the last answer came from the backup model
 
     def reply(self, question, history=(), context=None, language="English"):
         """context: a CropContext.get_context() dict (or None); language: a key of LANGUAGES."""
@@ -88,10 +109,17 @@ class AgricultureAssistant:
             raise ChatbotError("Please type a question.")
         question = question[:MAX_QUESTION_CHARS]
         messages = build_messages(question, history, context, language)
-        try:
-            response = self.chat_model.invoke(messages)
-        except Exception as exc:  # noqa: BLE001 - every failure becomes a clear message
-            raise _service_error(exc, getattr(self.chat_model, "model_name", None)) from exc
+        models = [self.chat_model] + ([self.fallback_model] if self.fallback_model else [])
+        self.used_fallback = False
+        for attempt, model in enumerate(models):
+            try:
+                response = model.invoke(messages)
+                break
+            except Exception as exc:  # noqa: BLE001 - every failure becomes a clear message
+                if attempt + 1 < len(models) and _worth_trying_fallback(exc):
+                    self.used_fallback = True
+                    continue
+                raise _service_error(exc, getattr(model, "model_name", None)) from exc
         text = response.content if isinstance(response.content, str) else ""
         if not text.strip():
             raise ChatServiceError(f"{UNAVAILABLE} It returned an empty answer; please "

@@ -158,3 +158,31 @@ def test_report_keeps_working_parts_when_one_service_fails(monkeypatch):
     report = get_weather_report(SURAT, api_key=None)
     assert report.current is None and "unavailable" in report.current_error
     assert not report.ok
+
+
+# --- Security: the API key never reaches a message ------------------------------------
+
+SECRET = "0123456789abcdef0123456789abcdef"
+
+
+@pytest.mark.parametrize("error", [
+    requests.TooManyRedirects(f"Exceeded redirects for https://api.openweathermap.org/data/2.5/"
+                              f"weather?lat=21.2&appid={SECRET}"),
+    requests.ConnectionError(f"Max retries exceeded with url: /data/2.5/weather?appid={SECRET}"),
+    requests.Timeout(f"Read timed out: /weather?appid={SECRET}"),
+])
+def test_request_errors_never_show_the_api_key(monkeypatch, error):
+    from src.weather import get_weather_report
+
+    monkeypatch.setattr(requests, "get", fake_api(owm=error))
+    report = get_weather_report(from_coordinates(21.2, 72.8), api_key=SECRET)
+    shown = f"{report.current_note} {report.current_error} {report.forecast_error}"
+    assert SECRET not in shown and "OpenWeather is unavailable" in report.current_note
+    assert report.current is not None                        # Open-Meteo still answers
+
+
+def test_redact_removes_the_key():
+    from src.weather.weather_service import redact
+
+    assert redact(f"bad url ?appid={SECRET}", SECRET) == "bad url ?appid=***"
+    assert redact(None, SECRET) is None and redact("text", None) == "text"

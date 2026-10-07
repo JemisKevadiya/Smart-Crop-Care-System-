@@ -40,6 +40,13 @@ class WeatherReport:
         return self.current is not None and bool(self.forecast)
 
 
+def redact(text, secret):
+    """Remove a secret (the API key) from a message before it is shown anywhere."""
+    if not text or not secret:
+        return text
+    return text.replace(secret, "***")
+
+
 def get_current(location, api_key):
     """(CurrentWeather or None, note, error) - OpenWeather first, Open-Meteo as fallback."""
     note = None
@@ -59,7 +66,9 @@ def get_current(location, api_key):
 
 def get_weather_report(location, api_key=None, days=7):
     report = WeatherReport(location)
-    report.current, report.current_note, report.current_error = get_current(location, api_key)
+    current, note, error = get_current(location, api_key)
+    report.current, report.current_note, report.current_error = (
+        current, redact(note, api_key), redact(error, api_key))
     try:
         report.timezone, report.forecast = openmeteo.get_forecast(
             location.latitude, location.longitude, days)

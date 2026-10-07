@@ -676,3 +676,105 @@ def test_assistant_uses_only_the_loaded_news(news_feeds, monkeypatch):
     at.chat_input[0].set_value("Any crop disease news?").run()
     system = model.calls[1][0].content
     assert "live news is currently unavailable" in system and "Centre hikes MSP" not in system
+
+
+# --- Browser refresh and chat starters ------------------------------------------------
+
+def _refreshed(at):
+    """A new AppTest session opened on the same URL, like pressing F5 in the browser."""
+    fresh = _app()
+    sid = at.query_params["sid"]
+    fresh.query_params["sid"] = sid[0] if isinstance(sid, list) else sid
+    return fresh.run()
+
+
+def test_refresh_restores_result_chat_and_language(monkeypatch, news_feeds):
+    from src.chatbot import llm
+    from tests.test_chatbot import RecordingModel
+
+    model = RecordingModel(answer="Remove the infected leaves first.")
+    monkeypatch.setattr(llm, "get_api_key", lambda: "test-key")
+    monkeypatch.setattr(llm, "create_chat_model", lambda api_key, **kw: model)
+    at = _upload(_dashboard())
+    at.segmented_control(key="dashboard_language").set_value("Gujarati").run()
+    at.chat_input(key="dashboard_input").set_value("What should I do now?").run()
+    assert at.query_params["sid"]                      # the session id is in the URL
+
+    fresh = _refreshed(at)
+    assert not fresh.exception
+    ctx = fresh.session_state["crop_context"]
+    assert ctx.crop == "Potato" and ctx.disease == "Early blight" and ctx.recommendation
+    assert len(fresh.session_state.chat_messages) == 2
+    fresh.switch_page("app_pages/disease_detection.py").run()
+    assert "Disease detection" in _subheaders(fresh) and _has_advice(fresh)
+    assert any("Showing your last analysed leaf" in c.value for c in fresh.caption)
+    assert fresh.segmented_control(key="dashboard_language").value == "Gujarati"
+    assert [m.name for m in fresh.chat_message] == ["user", "assistant"]
+    stored = str(fresh.session_state.to_dict())        # still no API key in the session
+    assert "test-key" not in stored
+
+
+def test_unknown_or_missing_session_id_starts_fresh():
+    at = _app()
+    at.query_params["sid"] = "not-a-session"
+    at.run()
+    assert not at.exception and not at.session_state["crop_context"].has_disease
+    sid = at.query_params["sid"]
+    assert (sid[0] if isinstance(sid, list) else sid) != "not-a-session"
+
+
+def test_restored_sessions_are_independent_copies():
+    at = _upload(_dashboard())
+    first, second = _refreshed(at), _refreshed(at)
+    first.session_state["crop_context"].clear_disease()
+    assert second.session_state["crop_context"].disease == "Early blight"
+
+
+def test_starter_questions_disappear_after_the_first_question(monkeypatch):
+    from src.chatbot import llm
+    from tests.test_chatbot import RecordingModel
+
+    monkeypatch.setattr(llm, "get_api_key", lambda: "test-key")
+    monkeypatch.setattr(llm, "create_chat_model", lambda api_key, **kw: RecordingModel())
+    at = _app().run()
+    at.switch_page("app_pages/assistant.py").run()
+    starters = [b for b in at.button if b.key and b.key.startswith("chat_starter_")]
+    assert starters
+    starters[0].click().run()
+    assert not at.exception and len(at.session_state.chat_messages) == 2
+    assert not [b for b in at.button if b.key and b.key.startswith("chat_starter_")]
+
+
+# --- Upload security -----------------------------------------------------------------
+
+@pytest.mark.parametrize("name", ["leaf.gif", "leaf.txt", "leaf.jpg.exe", "leaf"])
+def test_upload_with_unsupported_extension_never_reaches_the_model(name):
+    """Browsers block these in the file dialog; a crafted upload is refused by Streamlit."""
+    _, data = _test_image("Potato___Early_blight")       # a real leaf, wrong file name
+    at = _dashboard()
+    at.file_uploader[0].upload(name, data, "image/jpeg").run()
+    assert "Disease detection" not in _subheaders(at)
+    assert at.session_state["crop_context"].disease is None
+    shown = " ".join(e.message for e in at.exception)
+    assert "Traceback" not in shown and "site-packages" not in shown   # no details leaked
+
+
+def test_renamed_non_image_with_image_extension_is_rejected():
+    at = _dashboard()
+    at.file_uploader[0].upload("leaf.png", b"<html><script>alert(1)</script></html>", "image/png").run()
+    assert not at.exception and "not a valid image" in at.error[0].value
+
+
+def test_saved_sessions_have_a_memory_limit(monkeypatch):
+    from src.context import session
+
+    session.forget_saved_sessions()
+    monkeypatch.setattr(session, "MAX_STORED_IMAGE_BYTES", 2_500_000)
+    for i in range(4):                                   # 4 sessions with a 1 MB leaf each
+        session._store[f"{i:032x}"] = {"state": {"last_leaf": {"data": b"x" * 1_000_000}},
+                                       "saved_at": float(i)}
+    with session._lock:
+        while len(session._store) > 1 and session._image_bytes() > session.MAX_STORED_IMAGE_BYTES:
+            del session._store[min(session._store, key=lambda s: session._store[s]["saved_at"])]
+    assert sorted(session._store) == [f"{2:032x}", f"{3:032x}"]   # the oldest were dropped
+    session.forget_saved_sessions()

@@ -11,8 +11,9 @@ FORECAST_DAYS = 7
 
 
 @st.cache_data(ttl=600, show_spinner="Fetching weather...")
-def fetch_report(location, api_key):
-    return get_weather_report(location, api_key=api_key, days=FORECAST_DAYS)
+def fetch_report(location):
+    # The key is read here, not passed in, so it never becomes part of a cache key.
+    return get_weather_report(location, api_key=get_api_key(), days=FORECAST_DAYS)
 
 
 def show_current(report):
@@ -102,7 +103,7 @@ with st.container(border=True):
     if st.button("Refresh weather", icon=":material/refresh:", key="weather_refresh"):
         fetch_report.clear()
 
-report = fetch_report(location, get_api_key())
+report = fetch_report(location)
 # Share the weather with the other pages.
 get_session_context().update_from_weather(report)
 show_current(report)

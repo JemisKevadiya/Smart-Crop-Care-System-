@@ -9,6 +9,7 @@ language. The Groq key is read from .env for each question and never stored.
 import streamlit as st
 
 from src.chatbot import LANGUAGES, AgricultureAssistant, ChatbotError
+from src.chatbot.chatbot import MAX_QUESTION_CHARS
 
 HISTORY_KEY = "chat_messages"
 LANGUAGE_KEY = "answer_language"    # plain value shared by every page's language picker
@@ -46,12 +47,15 @@ def ask(question, context, language):
         try:
             with st.spinner("Thinking..."):
                 # Created per question: the key is read from .env and never stored.
-                answer = AgricultureAssistant().reply(question, messages[:-1], context, language)
+                assistant = AgricultureAssistant()
+                answer = assistant.reply(question, messages[:-1], context, language)
         except ChatbotError as exc:
             messages.pop()      # let the user ask again
             st.error(str(exc), icon=":material/error:")
             return
         st.markdown(answer)
+        if assistant.used_fallback:
+            st.caption("The main AI model was busy, so a smaller backup model answered.")
     messages.append({"role": "assistant", "content": answer})
 
 
@@ -69,16 +73,18 @@ def show_chat(prefix, context, language=None, height=None):
                 st.markdown(message["content"])
 
     clicked = None
+    starter_slot = st.empty()           # cleared as soon as a question is asked
     if not history():
         starters = STARTERS_WITH_CONTEXT if context and context.get("disease") else STARTERS
-        with st.container(horizontal=True):
+        with starter_slot.container(horizontal=True):
             for i, text in enumerate(starters):
                 if st.button(text, key=f"{prefix}_starter_{i}", type="tertiary",
                              icon=":material/chat_bubble:"):
                     clicked = text
 
     question = st.chat_input("Ask about crops, diseases, fertilizer, weather or news...",
-                             key=f"{prefix}_input")
+                             key=f"{prefix}_input", max_chars=MAX_QUESTION_CHARS)
     if question or clicked:
+        starter_slot.empty()
         with box:
             ask(question or clicked, context, language)

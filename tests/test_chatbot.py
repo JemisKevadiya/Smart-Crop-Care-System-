@@ -223,3 +223,64 @@ def test_english_is_the_default_and_unknown_languages_are_rejected():
     assert "write your whole answer in English" in messages[0].content
     with pytest.raises(ValueError, match="unsupported language"):
         build_system_prompt(language="French")
+
+
+# --- Backup model when Groq is busy -------------------------------------------------
+
+@pytest.mark.parametrize("error", [
+    _status(groq.RateLimitError, 429), _status(groq.InternalServerError, 503),
+    groq.APITimeoutError(request=REQUEST), _status(groq.NotFoundError, 404)])
+def test_backup_model_answers_when_main_model_is_busy(error):
+    main, backup = RecordingModel(error=error), RecordingModel(answer="Backup answer.")
+    assistant = AgricultureAssistant(chat_model=main, fallback_model=backup)
+    assert assistant.reply("How do I treat leaf mold?") == "Backup answer."
+    assert assistant.used_fallback and len(main.calls) == len(backup.calls) == 1
+
+
+def test_backup_model_is_not_used_for_other_errors_or_success():
+    backup = RecordingModel(answer="Backup answer.")
+    bad_key = RecordingModel(error=_status(groq.AuthenticationError, 401))
+    with pytest.raises(ChatServiceError, match="rejected the API key"):
+        AgricultureAssistant(chat_model=bad_key, fallback_model=backup).reply("Hi farmer?")
+    ok = AgricultureAssistant(chat_model=RecordingModel(), fallback_model=backup)
+    assert ok.reply("Hi farmer?") == "Here is some general guidance." and not ok.used_fallback
+    assert backup.calls == []
+
+
+def test_both_models_busy_shows_unavailable():
+    busy = _status(groq.RateLimitError, 429)
+    assistant = AgricultureAssistant(chat_model=RecordingModel(error=busy),
+                                     fallback_model=RecordingModel(error=busy))
+    with pytest.raises(ChatServiceError, match="request limit"):
+        assistant.reply("How do I treat leaf mold?")
+
+
+def test_backup_model_setting(monkeypatch):
+    settings = {}
+    monkeypatch.setattr(llm, "get_setting", lambda name, *a: settings.get(name))
+    assert llm.get_fallback_model_name() == "openai/gpt-oss-20b"
+    settings["GROQ_FALLBACK_MODEL"] = "none"
+    assert llm.get_fallback_model_name() is None
+    settings.update(GROQ_FALLBACK_MODEL="openai/gpt-oss-120b")    # same as the main model
+    assert llm.get_fallback_model_name() is None
+
+    created = []
+    monkeypatch.setattr(llm, "get_api_key", lambda: "test-key")
+    monkeypatch.setattr(llm, "create_chat_model",
+                        lambda api_key, model=None, **kw: created.append(model) or RecordingModel())
+    settings["GROQ_FALLBACK_MODEL"] = "openai/gpt-oss-20b"
+    AgricultureAssistant()
+    assert created == [None, "openai/gpt-oss-20b"]
+
+
+def test_prompt_forbids_made_up_doses_and_products():
+    prompt = build_system_prompt()
+    assert "Do not give numbers for doses, application rates" in prompt
+    assert "N:P:K or N:K ratios" in prompt
+    assert "Name a specific product or active ingredient only if it appears" in prompt
+    assert "General guidance (not from the app's data)" in prompt
+
+
+def test_prompt_requires_the_missing_information_sentence():
+    prompt = build_system_prompt()
+    assert 'begin your answer with exactly this sentence: "I don\'t have that information' in prompt

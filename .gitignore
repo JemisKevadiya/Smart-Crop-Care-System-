@@ -149,6 +149,9 @@ activemq-data/
 
 # Environments
 .env
+# Any other local env files (e.g. .env.local); the placeholder template is kept
+.env.*
+!.env.example
 .envrc
 .venv
 env/

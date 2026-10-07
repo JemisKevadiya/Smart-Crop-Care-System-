@@ -19,6 +19,9 @@ from tensorflow.keras.applications.resnet50 import preprocess_input
 from src.preprocessing.pipeline import resize_image
 
 ALLOWED_FORMATS = {"JPEG", "PNG", "BMP", "WEBP"}
+# File-name extensions accepted for upload. The content is still checked separately:
+# a renamed file of another type is rejected by validate_image.
+ALLOWED_EXTENSIONS = ("jpg", "jpeg", "png", "bmp", "webp")
 MAX_FILE_BYTES = 15 * 1024 * 1024  # 15 MB
 MIN_SIDE = 32                      # pixels
 MAX_PIXELS = 40_000_000            # guards against decompression bombs
@@ -30,6 +33,15 @@ MIN_PIXEL_STD = 5.0
 
 class ImageValidationError(ValueError):
     """The input is not a usable image. The message is safe to show to users."""
+
+
+def validate_filename(name):
+    """Raise ImageValidationError unless the file name has an allowed image extension."""
+    suffix = Path(name or "").suffix.lower().lstrip(".")
+    if suffix not in ALLOWED_EXTENSIONS:
+        shown = f"'.{suffix}'" if suffix else "no extension"
+        raise ImageValidationError(
+            f"Unsupported file type ({shown}). Upload a {', '.join(ALLOWED_EXTENSIONS)} image.")
 
 
 def _read_bytes(source):

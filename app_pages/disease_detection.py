@@ -9,7 +9,12 @@ import streamlit as st
 
 from src.context import get_session_context
 from src.disease_detection import ModelLoadError
-from src.disease_detection.preprocessing import ALLOWED_FORMATS
+from src.disease_detection.preprocessing import (
+    ALLOWED_EXTENSIONS,
+    ALLOWED_FORMATS,
+    ImageValidationError,
+    validate_filename,
+)
 from src.fertilizer import get_recommendation
 from src.integration import CropCareAnalyzer
 from src.ui import show_news
@@ -17,7 +22,7 @@ from src.ui.chat_panel import show_chat
 from src.ui.news_panel import md_escape
 from src.weather import Location, get_api_key, get_weather_report
 
-UPLOAD_TYPES = ["jpg", "jpeg", "png", "bmp", "webp"]
+UPLOAD_TYPES = list(ALLOWED_EXTENSIONS)
 
 
 @st.cache_resource(show_spinner="Loading the disease detection model...")
@@ -31,8 +36,9 @@ def analyze(image_bytes, _analyzer):
 
 
 @st.cache_data(ttl=600, show_spinner="Fetching weather...")
-def fetch_weather(location, api_key):
-    return get_weather_report(location, api_key=api_key, days=7)
+def fetch_weather(location):
+    # The key is read here, not passed in, so it never becomes part of a cache key.
+    return get_weather_report(location, api_key=get_api_key(), days=7)
 
 
 def show_weather_context():
@@ -56,7 +62,7 @@ def show_weather_context():
     location = Location(saved["name"], saved["latitude"], saved["longitude"],
                         source=saved.get("source", "search"))
     try:
-        report = fetch_weather(location, get_api_key())
+        report = fetch_weather(location)
     except Exception:  # noqa: BLE001 - weather must never break the disease results
         report = None
     if report is None or (report.current is None and not report.forecast):
@@ -163,6 +169,8 @@ def summary_lines(context):
 st.caption("Upload a clear photo of a single leaf to check it for disease and get "
            "fertilizer and treatment advice.")
 
+# `type` makes the browser and Streamlit's server refuse other extensions;
+# validate_filename below is a second check, and validate_image checks the content.
 uploaded = st.file_uploader(
     "Upload leaf image", type=UPLOAD_TYPES,
     help=f"Supported formats: {', '.join(sorted(ALLOWED_FORMATS))}. Max 15 MB.")
@@ -170,6 +178,11 @@ uploaded = st.file_uploader(
 # Streamlit forgets the uploaded file when the user switches pages, so the last leaf is
 # kept in session state and shown again while its result is in the crop context.
 if uploaded is not None:
+    try:
+        validate_filename(uploaded.name)    # extension; the content is validated below
+    except ImageValidationError as exc:
+        st.error(f"This file can't be analyzed: {exc}", icon=":material/broken_image:")
+        st.stop()
     leaf = {"name": uploaded.name, "data": uploaded.getvalue()}
     st.session_state.last_leaf = leaf
 else:

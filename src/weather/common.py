@@ -35,12 +35,15 @@ def get_json(url, params, service, timeout=TIMEOUT_SECONDS):
     except requests.Timeout as exc:
         raise WeatherServiceError(
             f"{service} did not respond within {timeout} seconds. Please try again later."
-        ) from exc
+        ) from None
     except requests.ConnectionError as exc:
         raise WeatherServiceError(
-            f"Could not connect to {service}. Check your internet connection.") from exc
+            f"Could not connect to {service}. Check your internet connection.") from None
     except requests.RequestException as exc:
-        raise WeatherServiceError(f"Request to {service} failed: {exc}") from exc
+        # Not str(exc): requests errors can contain the full URL, including ?appid=<key>.
+        raise WeatherServiceError(
+            f"Request to {service} failed ({type(exc).__name__}). Please try again later."
+        ) from None
 
     try:
         data = response.json()

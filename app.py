@@ -15,6 +15,10 @@ import streamlit as st
 
 st.set_page_config(page_title="Smart Crop Care", page_icon=":material/eco:", layout="centered")
 
+from src.context import restore_session, save_session  # noqa: E402
+
+restore_session()      # brings back this session's results after a browser refresh
+
 if importlib.util.find_spec("tensorflow") is None:
     st.error(
         "TensorFlow is not installed in the Python environment running this app. "
@@ -241,4 +245,7 @@ page = st.navigation(
     position="top",
 )
 st.html(hero_html())
-page.run()
+try:
+    page.run()
+finally:              # also runs when a page calls st.stop(), st.rerun() or st.switch_page()
+    save_session()

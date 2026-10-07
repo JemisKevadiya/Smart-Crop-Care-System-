@@ -107,3 +107,21 @@ def test_predictor_end_to_end(leaf_path):
     strict = DiseasePredictor(confidence_threshold=1.0)
     low = strict.predict(leaf_path)
     assert not low.is_confident and "Low confidence" in low.message
+
+
+# --- Upload file names (second check behind st.file_uploader's type list) -------------
+
+@pytest.mark.parametrize("name", ["leaf.jpg", "LEAF.JPEG", "a.b.png", "x.webp", "scan.BMP"])
+def test_allowed_image_extensions(name):
+    from src.disease_detection.preprocessing import validate_filename
+
+    validate_filename(name)
+
+
+@pytest.mark.parametrize("name", ["leaf.gif", "leaf.txt", "leaf.jpg.exe", "leaf", "", None,
+                                  "photo.svg", "notes.html"])
+def test_other_extensions_are_rejected(name):
+    from src.disease_detection.preprocessing import ImageValidationError, validate_filename
+
+    with pytest.raises(ImageValidationError, match="Unsupported file type"):
+        validate_filename(name)
