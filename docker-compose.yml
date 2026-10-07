@@ -1,0 +1,17 @@
+# Smart Crop Care with Docker Compose:
+#
+#   docker compose up --build        then open http://localhost:8501
+#
+# API keys come from the local .env file at run time (it is not copied into the image
+# and not written here). Without a .env file the app still starts; the assistant then
+# reports that GROQ_API_KEY is not set and weather uses Open-Meteo.
+services:
+  smart-crop-care:
+    build: .
+    image: smart-crop-care
+    ports:
+      - "8501:8501"
+    env_file:
+      - path: .env
+        required: false
+    restart: unless-stopped

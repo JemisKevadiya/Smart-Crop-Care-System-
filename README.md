@@ -127,6 +127,36 @@ streamlit run app.py
 Run it from the activated `.venv`. The app needs only the model and the files in `data/`;
 the raw dataset is not required.
 
+### API keys
+
+Copy `.env.example` to `.env` and add your keys. `.env` is git-ignored; never commit it.
+
+- `GROQ_API_KEY` - Agriculture Assistant (free key at console.groq.com).
+- `OPENWEATHER_API_KEY` - current weather (optional; without it Open-Meteo is used).
+
+Live farmer news reads publishers' RSS feeds and needs no key. Check the setup with
+`python scripts/check_config.py` (add `--online` to test the keys); key values are never
+printed.
+
+## Run with Docker
+
+The image contains only what inference needs: the trained model, the advice table,
+the app code and CPU-only TensorFlow (`requirements-docker.txt`). It does not contain
+the dataset, notebooks, tests or any API keys; keys are passed when the container starts.
+
+```bash
+docker build -t smart-crop-care .
+docker run --rm -p 8501:8501 --env-file .env smart-crop-care
+```
+
+or, with Docker Compose:
+
+```bash
+docker compose up --build
+```
+
+Then open http://localhost:8501.
+
 ## Reproduce training (optional)
 
 1. Download the Kaggle dataset and copy its `train/`, `valid/` and `test/` folders into

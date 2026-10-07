@@ -1,0 +1,41 @@
+# Keep the build context small and secrets out of the image.
+# The Dockerfile copies the runtime files it needs by name; this list is a second line
+# of defence and keeps large folders from being sent to Docker at all.
+
+# Secrets - never in the image (keys are passed at run time)
+.env
+.env.*
+!.env.example
+.streamlit/secrets.toml
+
+# Training data, notebooks, tests and reports not needed for inference
+Dataset/
+*.zip
+notebooks/
+tests/
+scripts/
+artifacts/plots/
+data/splits/*.csv
+data/fertilizer/archive/
+models/resnet50/training_state/
+models/resnet50/smoke_test/
+
+# Environments, caches, tooling
+.venv/
+venv/
+env/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ipynb_checkpoints/
+.git/
+.gitattributes
+.vscode/
+.idea/
+logs/
+*.log
+
+# Legacy code not used by the app
+config/
+src/utils/
+ui/

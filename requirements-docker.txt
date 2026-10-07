@@ -1,0 +1,12 @@
+# Runtime dependencies for the Docker image (inference + Streamlit app only).
+# Pinned to the versions the app was tested with. Training, notebooks and tests
+# need the full list in requirements.txt.
+tensorflow-cpu==2.21.0
+numpy==2.4.6
+pandas==3.0.6
+pillow==12.3.0
+streamlit==1.64.0
+requests==2.34.2
+langchain-groq==1.1.3
+langchain-core==1.6.7
+groq==0.37.1
