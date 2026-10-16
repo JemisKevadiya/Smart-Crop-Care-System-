@@ -7,7 +7,7 @@ from PIL import Image
 from src.disease_detection.scope_check import REFERENCE_PATH, LeafScopeChecker, knn_similarity
 from src.preprocessing import config, splits
 
-MODEL = config.ROOT / "models" / "resnet50" / "best_resnet50.keras"
+from src.disease_detection.model_loader import MODEL_PATH as MODEL  # active disease model
 needs_model = pytest.mark.skipif(not (MODEL.exists() and REFERENCE_PATH.exists()),
                                  reason="trained model or leaf reference not available")
 
@@ -23,7 +23,7 @@ def test_knn_similarity_scores_near_and_far_vectors():
 @pytest.mark.skipif(not REFERENCE_PATH.exists(), reason="leaf reference not built")
 def test_saved_reference_is_consistent():
     checker = LeafScopeChecker.from_file()
-    assert checker.reference.shape[1] == 2048 and len(checker.reference) >= 38
+    assert checker.reference.shape[1] in (1280, 2048) and len(checker.reference) >= 38
     assert 0 < checker.threshold < 1
 
 
@@ -38,7 +38,8 @@ def analyzer():
 def test_real_leaf_is_in_scope(analyzer):
     leaf = config.ROOT / splits.load_split("test")["path"].iloc[0]
     result = analyzer.analyze(leaf)
-    assert result.prediction.in_scope and result.prediction.scope_score >= 0.6
+    assert result.prediction.in_scope
+    assert result.prediction.scope_score >= analyzer.predictor.scope_checker.threshold
     assert result.status == "ok"
 
 

@@ -14,7 +14,7 @@ about the combined result.
 
 The system combines:
 
-- **Plant disease detection**: a ResNet50 image model, 38 classes across 14 crops
+- **Plant disease detection**: an EfficientNetB0 image model (ResNet50 as fallback), 38 classes across 14 crops
 - **Fertilizer recommendation**: from a curated table for each disease
 - **Treatment recommendation**: general, eco-friendly and chemical options
 - **Weather information**: current conditions and a 7-day forecast
@@ -73,7 +73,7 @@ Farmer
   ↓  uploads a leaf photo, chooses a location, asks questions
 Streamlit app  (app.py + app_pages/)
   ↓
-Disease Detection        src/disease_detection  (validation → ResNet50 → scope check)
+Disease Detection        src/disease_detection  (validation → EfficientNetB0 → scope check)
   ↓
 Crop Context             src/context  (one shared record per user session)
   ↓
@@ -114,7 +114,7 @@ App pages (`app_pages/`):
 | Area | Technology |
 |---|---|
 | Language | Python 3.11 |
-| Deep learning | TensorFlow / Keras, ResNet50 (ImageNet weights, transfer learning) |
+| Deep learning | TensorFlow / Keras; EfficientNetB0 (default) and ResNet50 (fallback), both ImageNet transfer learning |
 | Data and images | NumPy, pandas, Pillow, ImageHash, scikit-learn (metrics, splits) |
 | Plots and notebooks | Matplotlib, Jupyter (nbformat, nbconvert, ipykernel) |
 | Web app | Streamlit (multipage navigation, `st.cache_data` / `st.cache_resource`) |
@@ -151,8 +151,11 @@ src/
 data/
   fertilizer/                fertilizer_recommendations.csv (archive/ holds the old table)
   splits/                    train/val/test lists and class names
-models/resnet50/             best_resnet50.keras (Git LFS), class_names.npy, leaf_reference.npz
-notebooks/                   01 dataset analysis, 02 preprocessing, 03 ResNet50 training
+models/efficientnetb0/       best_efficientnetb0.keras (Git LFS), class_names.npy, leaf_reference.npz (default model)
+models/resnet50/             best_resnet50.keras (Git LFS), class_names.npy, leaf_reference.npz (fallback)
+models/densenet121/          experimental DenseNet121 (not used by the app)
+notebooks/                   01 dataset analysis, 02 preprocessing, 03 ResNet50 training,
+                             04 DenseNet121 (experimental), 05 EfficientNetB0 (Kaggle)
 scripts/                     dataset inspection, training, evaluation, leaf reference,
                              config check, prediction and integration tests
 artifacts/
@@ -237,6 +240,7 @@ GROQ_API_KEY=your_groq_api_key_here
 | `GROQ_MODEL` | Optional | A different Groq model (default `openai/gpt-oss-120b`). |
 | `GROQ_FALLBACK_MODEL` | Optional | Backup model used when the main one is rate-limited (default `openai/gpt-oss-20b`; `none` turns it off). |
 | `NEWS_FEEDS` | Optional | Replaces the default news feeds: `Publisher\|feed URL\|all` entries separated by `;`. |
+| `DISEASE_MODEL` | Optional | `efficientnetb0` (default) or `resnet50`. If the chosen model's files are missing, ResNet50 is used. |
 
 Live farmer news needs no API key.
 
@@ -246,17 +250,49 @@ Live farmer news needs no API key.
 Image
   → Validation      format (JPEG/PNG/BMP/WEBP), size ≤ 15 MB, not empty,
                     not corrupted, not blank
-  → Preprocessing   centre square crop, resize to 224×224,
-                    resnet50.preprocess_input
-  → ResNet50        softmax over 38 classes → disease + confidence (top 3 kept)
+  → Preprocessing   centre square crop, resize to 224×224, model-specific scaling
+                    (EfficientNetB0: raw 0–255 pixels; ResNet50: resnet50.preprocess_input)
+  → EfficientNetB0  softmax over 38 classes → disease + confidence (top 3 kept)
   → Scope check     features compared with real training leaves;
                     too different → "not a supported leaf"
   → Confidence      ≥ 80%: advice shown;
                     < 80%: low confidence, advice withheld, clearer photo requested
 ```
 
-The code is in `src/disease_detection/` (`preprocessing.py`, `model_loader.py`,
-`predictor.py`, `scope_check.py`).
+The code is in `src/disease_detection/` (`model_config.py`, `preprocessing.py`,
+`model_loader.py`, `predictor.py`, `scope_check.py`). `model_config.py` selects the model
+(`DISEASE_MODEL`), its preprocessing, its leaf reference and its reports.
+
+### Default model: EfficientNetB0
+
+Trained on Kaggle (2× T4 GPU) with [`notebooks/05_smart_crop_care_efficientnetb0.ipynb`](notebooks/05_smart_crop_care_efficientnetb0.ipynb)
+on the **full** Kaggle dataset (`train/` + `valid/`, 87,841 images after removing 26 duplicates),
+using the same leaf-grouped 80/10/10 split method (0 leakage) and the same head and two-stage
+training as ResNet50 (5 epochs head, then 5 epochs fine-tuning `block6`–`block7`, Adam 1e-3 / 1e-5).
+EfficientNetB0 normalises pixels inside the model, so it takes raw 0–255 input.
+
+| Split | Images | Accuracy | Macro precision | Macro recall | Macro F1 | Macro ROC-AUC | Top-3 |
+|---|---|---|---|---|---|---|---|
+| Train | 70,199 | 98.89% | 0.9893 | 0.9886 | 0.9888 | 1.0000 | 99.96% |
+| Validation | 8,832 | 98.31% | 0.9836 | 0.9828 | 0.9829 | 0.9999 | 99.90% |
+| **Test** | **8,810** | **98.09%** | **0.9812** | **0.9808** | **0.9808** | **0.9999** | **99.84%** |
+
+4.39 M parameters (46 MB file), about 5× smaller and 2× faster on CPU than ResNet50.
+Weakest test classes: Tomato Target Spot (F1 0.90), Corn Cercospora leaf spot (0.92),
+Tomato Early blight (0.92). Reports: [`artifacts/reports/efficientnetb0/`](artifacts/reports/efficientnetb0/).
+
+**Non-leaf check for EfficientNetB0.** With 60 reference leaves per class, real leaves and
+non-leaf images overlapped. With **300 reference leaves per class** (11,400) and a threshold of
+**0.45**, 0 of 10,436 held-out real leaves were rejected and 33 of 33 non-leaf images were caught
+(lowest real-leaf score 0.472, highest non-leaf score 0.430). The margin is smaller than ResNet50's.
+
+**Fair comparison.** The two models were tested on different test sets. On the 533 test leaves that
+neither model saw in training: EfficientNetB0 98.69% (7 errors), ResNet50 98.31% (9 errors), so
+their accuracy is about equal; EfficientNetB0 is smaller and faster.
+
+### Fallback model: ResNet50
+
+Set `DISEASE_MODEL=resnet50` to use it. It was trained locally on half of the dataset.
 
 **Model** (`src/model/resnet50.py`): ResNet50 with ImageNet weights (`include_top=False`),
 followed by global average pooling, dropout 0.3, Dense 256 (ReLU) and a softmax over the

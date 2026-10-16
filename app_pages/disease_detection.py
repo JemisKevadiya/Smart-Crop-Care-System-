@@ -9,6 +9,7 @@ import streamlit as st
 
 from src.context import get_session_context
 from src.disease_detection import ModelLoadError
+from src.disease_detection.model_config import ACTIVE as MODEL
 from src.disease_detection.preprocessing import (
     ALLOWED_EXTENSIONS,
     ALLOWED_FORMATS,
@@ -242,7 +243,7 @@ with st.container(border=True):
         if result.recommendation and result.recommendation.category:
             st.badge(result.recommendation.category,
                      color="green" if prediction.is_healthy else "orange")
-    st.caption("Identified from the image by the ResNet50 model. A prediction can be wrong, "
+    st.caption(f"Identified from the image by the {MODEL.name} model. A prediction can be wrong, "
                "so check the symptoms on the plant.")
 with st.expander("Other possibilities", icon=":material/format_list_numbered:"):
     for candidate in prediction.top_k:

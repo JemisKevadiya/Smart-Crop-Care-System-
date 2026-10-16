@@ -1,4 +1,7 @@
-"""Load the trained ResNet50 classifier and its class names (cached)."""
+"""Load the trained disease classifier and its class names (cached).
+
+The model is chosen in model_config (DISEASE_MODEL; EfficientNetB0 by default).
+"""
 
 from functools import lru_cache
 from pathlib import Path
@@ -7,8 +10,10 @@ import numpy as np
 
 from src.preprocessing import config
 
-MODEL_PATH = config.ROOT / "models" / "resnet50" / "best_resnet50.keras"
-CLASS_NAMES_PATH = config.ROOT / "models" / "resnet50" / "class_names.npy"
+from .model_config import ACTIVE
+
+MODEL_PATH = ACTIVE.model_path
+CLASS_NAMES_PATH = ACTIVE.class_names_path
 
 
 class ModelLoadError(RuntimeError):
@@ -36,7 +41,8 @@ def load_model(path=MODEL_PATH):
     path = Path(path)
     if not path.is_file():
         raise ModelLoadError(
-            f"Model file not found: {path}. Train it with scripts/train_resnet50.py.")
+            f"Model file not found: {path}. Train it (scripts/train_resnet50.py for ResNet50, "
+            "notebooks/05_smart_crop_care_efficientnetb0.ipynb for EfficientNetB0).")
     from tensorflow import keras  # deferred: TensorFlow import is slow
 
     try:

@@ -27,6 +27,7 @@ if importlib.util.find_spec("tensorflow") is None:
         icon=":material/error:")
     st.stop()
 
+from src.disease_detection.model_config import ACTIVE as MODEL  # noqa: E402
 from src.disease_detection.model_loader import load_class_names  # noqa: E402
 from src.disease_detection.predictor import parse_class_name  # noqa: E402
 from src.disease_detection.predictor import DEFAULT_CONFIDENCE_THRESHOLD  # noqa: E402
@@ -35,8 +36,8 @@ from src.model.resnet50 import TRAIN  # noqa: E402
 from src.preprocessing import config  # noqa: E402
 from tensorflow import __version__ as tf_version  # noqa: E402
 
-METRICS_PATH = config.ROOT / "artifacts" / "reports" / "model_metrics.json"
-SPLIT_REPORT_PATH = config.SPLITS_DIR / "split_report.json"
+METRICS_PATH = MODEL.metrics_path              # reports of the active disease model
+SPLIT_REPORT_PATH = MODEL.split_report_path
 HERO_IMAGE = config.ROOT / "assets" / "hero_leaves.jpg"  # scripts/make_hero_image.py
 
 
@@ -149,7 +150,7 @@ with st.sidebar:
             "1. **Upload** a photo of one leaf.\n"
             "2. **Check** - the file is validated (format, size, not blank or corrupted).\n"
             "3. **Prepare** - the image is cropped to a square, resized to 224 x 224 and "
-            "normalized for ResNet50.\n"
+            f"prepared for {MODEL.name}.\n"
             f"4. **Predict** - the model picks one of {facts['num_classes']} crop/disease "
             "classes and reports its confidence.\n"
             "5. **Scope check** - the image's features are compared with real training "
@@ -159,14 +160,14 @@ with st.sidebar:
 
     with st.expander("Model", icon=":material/neurology:"):
         st.markdown(
-            "**ResNet50** pretrained on ImageNet, with a new classification head:\n"
+            f"**{MODEL.name}** pretrained on ImageNet, with a new classification head:\n"
             f"global average pooling, dropout {cfg['dropout']}, dense {cfg['dense_units']} "
             f"(ReLU) and a {facts['num_classes']}-class softmax.")
         st.markdown(
             "**Two-stage transfer learning**\n"
             f"- Stage 1: backbone frozen, head trained for "
             f"{facts['epochs'].get('stage1', '?')} epochs (Adam, lr {cfg['stage1_lr']:g}).\n"
-            f"- Stage 2: last ResNet block (conv5) fine-tuned for "
+            f"- Stage 2: {MODEL.finetuned} fine-tuned for "
             f"{facts['epochs'].get('stage2', '?')} epochs (Adam, lr {cfg['stage2_lr']:g}), "
             "BatchNorm kept frozen.\n"
             "- Training-only augmentation: flips, rotation, zoom, shift, brightness, "

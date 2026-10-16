@@ -1,0 +1,62 @@
+{
+  "model": "EfficientNetB0",
+  "model_path": "models/efficientnetb0/best_efficientnetb0.keras",
+  "num_classes": 38,
+  "evaluation": {
+    "train": {
+      "images": 70199,
+      "accuracy": 0.9889,
+      "precision_macro": 0.9893,
+      "recall_macro": 0.9886,
+      "f1_macro": 0.9888,
+      "precision_weighted": 0.9893,
+      "recall_weighted": 0.9889,
+      "f1_weighted": 0.9889,
+      "roc_auc_macro": 1.0,
+      "top3_accuracy": 0.9996,
+      "loss": 0.033
+    },
+    "val": {
+      "images": 8832,
+      "accuracy": 0.9831,
+      "precision_macro": 0.9836,
+      "recall_macro": 0.9828,
+      "f1_macro": 0.9829,
+      "precision_weighted": 0.9838,
+      "recall_weighted": 0.9831,
+      "f1_weighted": 0.9831,
+      "roc_auc_macro": 0.9999,
+      "top3_accuracy": 0.999,
+      "loss": 0.0516
+    },
+    "test": {
+      "images": 8810,
+      "accuracy": 0.9809,
+      "precision_macro": 0.9812,
+      "recall_macro": 0.9808,
+      "f1_macro": 0.9808,
+      "precision_weighted": 0.9814,
+      "recall_weighted": 0.9809,
+      "f1_weighted": 0.9809,
+      "roc_auc_macro": 0.9999,
+      "top3_accuracy": 0.9984,
+      "loss": 0.057
+    }
+  },
+  "training_epochs": {
+    "stage1": 5,
+    "stage2": 5
+  },
+  "test_lowest_f1_classes": {
+    "Tomato___Target_Spot": 0.898,
+    "Corn_(maize)___Cercospora_leaf_spot Gray_leaf_spot": 0.916,
+    "Tomato___Early_blight": 0.918,
+    "Corn_(maize)___Northern_Leaf_Blight": 0.931,
+    "Tomato___Spider_mites Two-spotted_spider_mite": 0.936
+  },
+  "notes": {
+    "source": "notebooks/05_smart_crop_care_efficientnetb0.ipynb (Kaggle, 2x T4), outputs of Steps 9-10",
+    "dataset": "Full Kaggle New Plant Diseases Dataset, leaf-grouped 80/10/10 split (seed 42), 0 leakage",
+    "evaluation": "Clean evaluation of the best checkpoint (no augmentation, no dropout)."
+  }
+}

@@ -2,9 +2,9 @@
 
 The classifier always picks one of its 38 classes and its softmax confidence is
 often ~100% on unrelated pictures (faces, scenes, noise), so confidence cannot
-tell a leaf from a non-leaf. This check compares the image's ResNet50 features
-(the 2048-value global-average-pooling output) with a reference set of real
-training leaves:
+tell a leaf from a non-leaf. This check compares the image's model features
+(the global-average-pooling output: 1280 values for EfficientNetB0, 2048 for
+ResNet50) with a reference set of real training leaves:
 
     score = mean cosine similarity to the K most similar reference leaves
 
@@ -20,9 +20,9 @@ from pathlib import Path
 
 import numpy as np
 
-from src.preprocessing import config
+from .model_config import ACTIVE
 
-REFERENCE_PATH = config.ROOT / "models" / "resnet50" / "leaf_reference.npz"
+REFERENCE_PATH = ACTIVE.reference_path      # each model has its own reference and threshold
 FEATURE_LAYER = "gap"
 DEFAULT_K = 5
 # Chosen in scripts/build_leaf_reference.py: lowest real-leaf score on validation

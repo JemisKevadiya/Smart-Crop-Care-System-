@@ -1,0 +1,19 @@
+{
+  "seed": 42,
+  "ratios": {
+    "train": 0.8,
+    "val": 0.1,
+    "test": 0.1
+  },
+  "images_in_pool": 87867,
+  "exact_duplicates_dropped": 26,
+  "images_after_dedup": 87841,
+  "num_groups": 45812,
+  "largest_group": 15,
+  "split_sizes": {
+    "train": 70199,
+    "val": 8832,
+    "test": 8810
+  },
+  "dataset": "New Plant Diseases Dataset (full Kaggle version, train/ + valid/)"
+}

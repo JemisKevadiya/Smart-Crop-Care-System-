@@ -25,10 +25,10 @@ import numpy as np  # noqa: E402
 from PIL import Image  # noqa: E402
 
 from src.disease_detection import DiseasePredictor  # noqa: E402
+from src.disease_detection.model_config import ACTIVE  # noqa: E402
 from src.disease_detection.preprocessing import preprocess_image  # noqa: E402
 from src.disease_detection.scope_check import (  # noqa: E402
     DEFAULT_K,
-    DEFAULT_SCOPE_THRESHOLD,
     REFERENCE_PATH,
     knn_similarity,
 )
@@ -90,9 +90,10 @@ def out_of_scope_images(seed=0):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__.split("\n")[0])
-    parser.add_argument("--per-class", type=int, default=60, help="reference images per class")
+    parser.add_argument("--per-class", type=int, default=ACTIVE.reference_per_class,
+                        help="reference images per class (300 for EfficientNetB0, 60 for ResNet50)")
     parser.add_argument("--eval-per-class", type=int, default=50, help="validation images per class")
-    parser.add_argument("--threshold", type=float, default=DEFAULT_SCOPE_THRESHOLD)
+    parser.add_argument("--threshold", type=float, default=ACTIVE.scope_threshold)
     args = parser.parse_args()
 
     predictor = DiseasePredictor(scope_checker=False)  # no scope check while building it

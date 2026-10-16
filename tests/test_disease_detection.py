@@ -11,6 +11,7 @@ from src.disease_detection.preprocessing import (
     preprocess_image,
     validate_image,
 )
+from src.disease_detection.model_loader import MODEL_PATH
 from src.preprocessing import config, splits
 
 
@@ -80,8 +81,10 @@ def test_preprocess_matches_training_pipeline(leaf_path):
     tf = pytest.importorskip("tensorflow")
     from src.preprocessing import pipeline
 
+    from src.disease_detection.model_config import preprocess_input
+
     ours = preprocess_image(leaf_path)
-    ref = pipeline.preprocess_image_file(leaf_path).numpy()
+    ref = np.asarray(preprocess_input(pipeline.load_image(tf.constant(str(leaf_path)))))[np.newaxis, ...]
     assert ours.shape == (1, 224, 224, 3) and ours.dtype == np.float32
     assert np.abs(ours - ref).max() < 1e-4
     # same result whether given a path, bytes, file-like object or PIL image
@@ -91,7 +94,7 @@ def test_preprocess_matches_training_pipeline(leaf_path):
     assert tf is not None
 
 
-@pytest.mark.skipif(not (config.ROOT / "models" / "resnet50" / "best_resnet50.keras").exists(),
+@pytest.mark.skipif(not MODEL_PATH.exists(),
                     reason="trained model not available")
 def test_predictor_end_to_end(leaf_path):
     from src.disease_detection import DiseasePredictor

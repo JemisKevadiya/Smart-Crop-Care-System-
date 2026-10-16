@@ -2,7 +2,7 @@ import pytest
 
 from src.preprocessing import config, splits
 
-MODEL = config.ROOT / "models" / "resnet50" / "best_resnet50.keras"
+from src.disease_detection.model_loader import MODEL_PATH as MODEL  # active disease model
 pytestmark = pytest.mark.skipif(not MODEL.exists(), reason="trained model not available")
 
 

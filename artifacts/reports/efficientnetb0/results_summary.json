@@ -1,0 +1,54 @@
+{
+  "model": "EfficientNetB0",
+  "source": "notebooks/05_smart_crop_care_efficientnetb0.ipynb (Kaggle run, outputs of Step 10)",
+  "dataset": "Full Kaggle New Plant Diseases Dataset, leaf-grouped 80/10/10 split (seed 42), 0 leakage",
+  "parameters": 4387273,
+  "evaluation": {
+    "train": {
+      "images": 70199,
+      "accuracy": 0.9889,
+      "precision_macro": 0.9893,
+      "recall_macro": 0.9886,
+      "f1_macro": 0.9888,
+      "precision_weighted": 0.9893,
+      "recall_weighted": 0.9889,
+      "f1_weighted": 0.9889,
+      "roc_auc_macro": 1.0,
+      "top3_accuracy": 0.9996,
+      "loss": 0.033
+    },
+    "val": {
+      "images": 8832,
+      "accuracy": 0.9831,
+      "precision_macro": 0.9836,
+      "recall_macro": 0.9828,
+      "f1_macro": 0.9829,
+      "precision_weighted": 0.9838,
+      "recall_weighted": 0.9831,
+      "f1_weighted": 0.9831,
+      "roc_auc_macro": 0.9999,
+      "top3_accuracy": 0.999,
+      "loss": 0.0516
+    },
+    "test": {
+      "images": 8810,
+      "accuracy": 0.9809,
+      "precision_macro": 0.9812,
+      "recall_macro": 0.9808,
+      "f1_macro": 0.9808,
+      "precision_weighted": 0.9814,
+      "recall_weighted": 0.9809,
+      "f1_weighted": 0.9809,
+      "roc_auc_macro": 0.9999,
+      "top3_accuracy": 0.9984,
+      "loss": 0.057
+    }
+  },
+  "non_leaf_check": {
+    "status": "fixed: 300 reference leaves per class, threshold 0.45",
+    "real_leaves_rejected": "0 of 10,436 held-out",
+    "non_leaf_caught": "33 of 33",
+    "details": "artifacts/reports/efficientnetb0/leaf_scope_check.json",
+    "previous": "Kaggle reference (60 per class) kept as leaf_reference_kaggle_60perclass.npz - not reliable"
+  }
+}

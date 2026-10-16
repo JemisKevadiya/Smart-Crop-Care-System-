@@ -10,7 +10,7 @@ from PIL import Image
 from src.context import CropContext
 from src.preprocessing import config, splits
 
-MODEL = config.ROOT / "models" / "resnet50" / "best_resnet50.keras"
+from src.disease_detection.model_loader import MODEL_PATH as MODEL  # active disease model
 needs_model = pytest.mark.skipif(not MODEL.exists(), reason="trained model not available")
 
 

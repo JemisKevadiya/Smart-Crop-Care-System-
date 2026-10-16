@@ -1,12 +1,13 @@
-"""Validate an uploaded leaf image and turn it into ResNet50 input.
+"""Validate an uploaded leaf image and turn it into model input.
 
     uploaded file -> validate -> RGB (EXIF-rotated) -> centre square crop
-    -> resize 224x224 -> resnet50.preprocess_input -> (1, 224, 224, 3) float32
+    -> resize 224x224 -> model preprocessing -> (1, 224, 224, 3) float32
 
-The resize and preprocess_input steps are the same functions the training
-pipeline uses, so a dataset image gives exactly the same tensor here as it did
-during validation/testing. Training images are square; non-square uploads are
-centre-cropped to a square first so the leaf is not stretched.
+The resize step is the same function the training pipelines use. The last step
+depends on the active model (model_config): resnet50.preprocess_input for
+ResNet50, raw 0-255 pixels for EfficientNetB0 (it normalises internally).
+Training images are square; non-square uploads are centre-cropped to a square
+first so the leaf is not stretched.
 """
 
 import io
@@ -14,9 +15,10 @@ from pathlib import Path
 
 import numpy as np
 from PIL import Image, ImageOps, UnidentifiedImageError
-from tensorflow.keras.applications.resnet50 import preprocess_input
 
 from src.preprocessing.pipeline import resize_image
+
+from .model_config import preprocess_input
 
 ALLOWED_FORMATS = {"JPEG", "PNG", "BMP", "WEBP"}
 # File-name extensions accepted for upload. The content is still checked separately:
@@ -134,4 +136,4 @@ def preprocess_image(source):
     image = center_square(validate_image(source))
     pixels = np.asarray(image, dtype=np.uint8)
     tensor = preprocess_input(resize_image(pixels))
-    return tensor.numpy()[np.newaxis, ...]
+    return np.asarray(tensor, dtype=np.float32)[np.newaxis, ...]

@@ -1,4 +1,4 @@
-"""Plant disease prediction from a leaf image with the trained ResNet50 model."""
+"""Plant disease prediction from a leaf image (EfficientNetB0 by default, ResNet50 as fallback)."""
 
 from .model_loader import ModelLoadError
 from .predictor import DiseasePredictor, Prediction, PredictionError

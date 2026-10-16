@@ -10,7 +10,7 @@ the user the result is uncertain instead of presenting it as a diagnosis.
 Confidence does not detect non-leaf images: the model only knows these 38
 classes and is often ~100% confident on unrelated pictures (faces, noise).
 So every prediction is also scored by scope_check.LeafScopeChecker, which
-compares the image's ResNet50 features with real training leaves. Images that
+compares the image's model features with real training leaves. Images that
 do not resemble them are flagged `in_scope=False` (and `is_confident=False`).
 Blank single-colour images are already rejected during validation.
 """

@@ -1,4 +1,5 @@
-# Smart Crop Care - Streamlit app with the trained ResNet50 model (CPU inference).
+# Smart Crop Care - Streamlit app with the trained EfficientNetB0 model (ResNet50 as
+# fallback; CPU inference).
 #
 #   docker build -t smart-crop-care .
 #   docker run --rm -p 8501:8501 --env-file .env smart-crop-care
@@ -26,6 +27,12 @@ RUN pip install -r requirements-docker.txt
 RUN useradd --create-home --uid 1000 appuser
 
 # Only what inference and the app need at runtime (no dataset, notebooks or tests).
+COPY --chown=appuser models/efficientnetb0/best_efficientnetb0.keras \
+     models/efficientnetb0/class_names.npy \
+     models/efficientnetb0/leaf_reference.npz  models/efficientnetb0/
+COPY --chown=appuser artifacts/reports/efficientnetb0/model_metrics.json \
+     artifacts/reports/efficientnetb0/split_report.json  artifacts/reports/efficientnetb0/
+# ResNet50 is kept as the fallback model (DISEASE_MODEL=resnet50).
 COPY --chown=appuser models/resnet50/best_resnet50.keras \
      models/resnet50/class_names.npy \
      models/resnet50/leaf_reference.npz  models/resnet50/
