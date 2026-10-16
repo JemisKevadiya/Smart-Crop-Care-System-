@@ -153,9 +153,9 @@ data/
   splits/                    train/val/test lists and class names
 models/efficientnetb0/       best_efficientnetb0.keras (Git LFS), class_names.npy, leaf_reference.npz (default model)
 models/resnet50/             best_resnet50.keras (Git LFS), class_names.npy, leaf_reference.npz (fallback)
-models/densenet121/          experimental DenseNet121 (not used by the app)
+models/densenet121/          best_densenet121.keras (Git LFS), class_names, leaf_reference.npz (comparison only, not used by the app)
 notebooks/                   01 dataset analysis, 02 preprocessing, 03 ResNet50 training,
-                             04 DenseNet121 (experimental), 05 EfficientNetB0 (Kaggle)
+                             05 EfficientNetB0 (Kaggle), 06 DenseNet121 (Kaggle, same split as 05)
 scripts/                     dataset inspection, training, evaluation, leaf reference,
                              config check, prediction and integration tests
 artifacts/

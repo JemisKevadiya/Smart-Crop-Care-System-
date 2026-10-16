@@ -1,0 +1,2 @@
+Model,Dataset,Images,Accuracy (%),Macro Precision (%),Macro Recall (%),Macro F1 (%),Weighted F1 (%),Macro ROC-AUC (%),Top-3 (%),Parameters
+DenseNet121,Leaf-grouped test split (full Kaggle data),8810,97.34,97.36,97.33,97.32,97.34,99.98,99.78,"7,309,670"
