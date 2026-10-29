@@ -1,0 +1,2 @@
+Model,Dataset,Images,Accuracy (%),Macro Precision (%),Macro Recall (%),Macro F1 (%),Weighted F1 (%),Macro ROC-AUC (%),Top-3 (%),Parameters,Training time (min),Split fingerprint (test)
+ResNet50,Leaf-grouped test split (full Kaggle data),8799,98.35,98.39,98.33,98.34,98.35,99.99,99.97,"24,122,022",106.9,13afce0ee189dd7d

@@ -64,14 +64,14 @@ MODELS = {
         metrics_file="artifacts/reports/efficientnetb0/model_metrics.json",
         split_report_file="artifacts/reports/efficientnetb0/split_report.json",
         finetuned="last EfficientNet blocks (block6 and block7)",
-        reference_per_class=300, scope_threshold=0.45),
+        reference_per_class=300, scope_threshold=0.44),
     "resnet50": ModelSpec(
         key="resnet50", name="ResNet50", folder="resnet50",
         model_file="best_resnet50.keras", preprocessing="resnet50",
-        metrics_file="artifacts/reports/model_metrics.json",
-        split_report_file="data/splits/split_report.json",
+        metrics_file="artifacts/reports/resnet50/model_metrics.json",
+        split_report_file="artifacts/reports/resnet50/split_report.json",
         finetuned="last ResNet block (conv5)",
-        reference_per_class=60, scope_threshold=0.60),
+        reference_per_class=300, scope_threshold=0.60),
 }
 
 

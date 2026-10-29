@@ -1,0 +1,2 @@
+Model,Dataset,Images,Accuracy (%),Macro Precision (%),Macro Recall (%),Macro F1 (%),Weighted F1 (%),Macro ROC-AUC (%),Top-3 (%),Parameters,Training time (min),Split fingerprint (test)
+EfficientNetB0,Leaf-grouped test split (full Kaggle data),8799,98.45,98.47,98.44,98.44,98.45,99.99,99.93,"4,387,273",100.5,13afce0ee189dd7d

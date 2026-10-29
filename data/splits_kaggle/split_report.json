@@ -1,0 +1,29 @@
+{
+  "seed": 42,
+  "ratios": {
+    "train": 0.8,
+    "val": 0.1,
+    "test": 0.1
+  },
+  "near_duplicate_bits": 4,
+  "images_in_pool": 87867,
+  "exact_duplicates_dropped": 26,
+  "images_after_dedup": 87841,
+  "num_groups": 45181,
+  "largest_group": 354,
+  "split_sizes": {
+    "train": 70138,
+    "val": 8904,
+    "test": 8799
+  },
+  "test_share_per_class": {
+    "min": 0.0987,
+    "max": 0.1018
+  },
+  "fingerprint": {
+    "train": "d4d22ddbaf9cd66f",
+    "val": "9df46ddb974db199",
+    "test": "13afce0ee189dd7d"
+  },
+  "dataset": "New Plant Diseases Dataset (full Kaggle version, train/ + valid/)"
+}

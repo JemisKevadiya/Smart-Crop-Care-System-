@@ -65,7 +65,7 @@ def out_of_scope_images(seed=0):
         "city_scene": Image.fromarray(scenes[0]),
         "flower_photo": Image.fromarray(scenes[1]),
         "cartoon_leaves_banner": Image.open(config.ROOT / "assets" / "hero_leaves.jpg").convert("RGB"),
-        "plot": Image.open(config.ROOT / "artifacts" / "plots" / "confusion_matrix.png").convert("RGB"),
+        "plot": Image.open(config.ROOT / "artifacts" / "plots" / "efficientnetb0" / "confusion_matrix.png").convert("RGB"),
     }
     images = {}
     for name, im in pictures.items():

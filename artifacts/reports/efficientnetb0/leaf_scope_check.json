@@ -1,19 +1,20 @@
 {
   "model": "EfficientNetB0",
-  "method": "mean cosine similarity to 5 nearest reference leaves (gap features)",
   "reference_images": 11400,
-  "per_class": 300,
-  "threshold": 0.45,
-  "real_leaves_heldout": {
-    "images": 10436,
-    "min_score": 0.4724,
-    "p0.1_score": 0.573,
-    "rejected": 0
+  "k": 5,
+  "val": {
+    "images": 1900,
+    "min_score": 0.5543
   },
+  "test": {
+    "images": 380,
+    "min_score": 0.5471
+  },
+  "threshold": 0.413,
   "out_of_scope": {
-    "images": 33,
-    "max_score": 0.4298,
-    "caught": 33
-  },
-  "note": "60 references per class (Kaggle run) overlapped with non-leaf images; 300 per class separates them. Margin is small (0.43 vs 0.47), tighter than ResNet50 (0.53 vs 0.64)."
+    "images": 27,
+    "max_score": 0.2784,
+    "caught": 27,
+    "mean_softmax_confidence_without_check": 0.659
+  }
 }

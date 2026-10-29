@@ -1,0 +1,20 @@
+{
+  "model": "EfficientNetB0",
+  "reference_images": 11400,
+  "k": 5,
+  "threshold": 0.44,
+  "threshold_from_kaggle_run": 0.413,
+  "why_changed": "In the app, the 0.413 threshold from the Kaggle run let 1 of 33 non-leaf images through (the cartoon leaf banner, score 0.417). 0.44 lies between that and the lowest real leaf.",
+  "real_leaves": {
+    "images": 10703,
+    "source": "local val + test images of the common split",
+    "min_score": 0.468,
+    "rejected": 0
+  },
+  "out_of_scope": {
+    "images": 33,
+    "source": "scripts/build_leaf_reference.py out_of_scope_images()",
+    "max_score": 0.417,
+    "rejected": 33
+  }
+}

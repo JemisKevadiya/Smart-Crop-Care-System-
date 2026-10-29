@@ -1,0 +1,21 @@
+{
+  "checks": {
+    "Same image file (MD5) in two splits": 0,
+    "Same leaf group in two splits": 0,
+    "Same leaf name in two splits (same class)": 0,
+    "Same image UUID in two splits (same class)": 0,
+    "Same perceptual hash in two splits (any class)": 0,
+    "Val/test image with a near-identical train image (pHash <= 4 bits)": 0,
+    "Val image with a near-identical test image (pHash <= 4 bits)": 0
+  },
+  "near_duplicate_bits": 4,
+  "fingerprint": {
+    "train": "d4d22ddbaf9cd66f",
+    "val": "9df46ddb974db199",
+    "test": "13afce0ee189dd7d"
+  },
+  "supplied_test_folder": {
+    "images": 33,
+    "copies_in_pool": 33
+  }
+}

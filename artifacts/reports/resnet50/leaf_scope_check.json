@@ -1,0 +1,20 @@
+{
+  "model": "ResNet50",
+  "reference_images": 11400,
+  "k": 5,
+  "val": {
+    "images": 1900,
+    "min_score": 0.6949
+  },
+  "test": {
+    "images": 380,
+    "min_score": 0.6926
+  },
+  "threshold": 0.6,
+  "out_of_scope": {
+    "images": 27,
+    "max_score": 0.5265,
+    "caught": 27,
+    "mean_softmax_confidence_without_check": 0.9074
+  }
+}

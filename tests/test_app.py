@@ -10,11 +10,10 @@ from src.preprocessing import config, splits
 APP = str(config.ROOT / "app.py")
 from src.disease_detection.model_config import ACTIVE
 from src.disease_detection.model_loader import MODEL_PATH as MODEL  # active disease model
-# A held-out test image the model is unsure about (confidence ~0.40; see
-# artifacts/reports/integration_test.json).
 # A real leaf the active model is unsure about (confidence below 80%).
 LOW_CONFIDENCE_IMAGES = {
-    "resnet50": "Dataset/raw/train/Raspberry___healthy/7f771790-da66-43db-a051-5900affecc6e___Mary_HL 9261.JPG",
+    "resnet50": ("Dataset/raw/valid/Tomato___Leaf_Mold/"
+                 "f6c43250-2d85-42fb-85e6-57699cbb9350___Crnl_L.Mold 6765_180deg.JPG"),
     "efficientnetb0": ("Dataset/raw/train/Pepper,_bell___healthy/"
                        "4cdfdfb8-1efa-4a4f-af25-1e968c3aa38c___JR_HL 7607_180deg.JPG"),
 }

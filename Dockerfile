@@ -36,9 +36,9 @@ COPY --chown=appuser artifacts/reports/efficientnetb0/model_metrics.json \
 COPY --chown=appuser models/resnet50/best_resnet50.keras \
      models/resnet50/class_names.npy \
      models/resnet50/leaf_reference.npz  models/resnet50/
+COPY --chown=appuser artifacts/reports/resnet50/model_metrics.json \
+     artifacts/reports/resnet50/split_report.json  artifacts/reports/resnet50/
 COPY --chown=appuser data/fertilizer/fertilizer_recommendations.csv  data/fertilizer/
-COPY --chown=appuser data/splits/split_report.json  data/splits/
-COPY --chown=appuser artifacts/reports/model_metrics.json  artifacts/reports/
 COPY --chown=appuser assets/hero_leaves.jpg  assets/
 COPY --chown=appuser .streamlit/config.toml  .streamlit/
 COPY --chown=appuser src/ src/

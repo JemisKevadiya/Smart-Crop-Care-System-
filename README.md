@@ -150,17 +150,19 @@ src/
   env.py                     reads settings from the environment or .env
 data/
   fertilizer/                fertilizer_recommendations.csv (archive/ holds the old table)
-  splits/                    train/val/test lists and class names
-models/efficientnetb0/       best_efficientnetb0.keras (Git LFS), class_names.npy, leaf_reference.npz (default model)
-models/resnet50/             best_resnet50.keras (Git LFS), class_names.npy, leaf_reference.npz (fallback)
-models/densenet121/          best_densenet121.keras (Git LFS), class_names, leaf_reference.npz (comparison only, not used by the app)
-notebooks/                   01 dataset analysis, 02 preprocessing, 03 ResNet50 training,
-                             05 EfficientNetB0 (Kaggle), 06 DenseNet121 (Kaggle, same split as 05)
+  splits/                    local dataset split used by the scripts and tests (local copy of the data)
+  splits_kaggle/             common split of the full Kaggle data (val/test lists, split report, leakage check)
+models/efficientnetb0/       best_efficientnetb0.keras (Git LFS), class_names, leaf_reference.npz (default model)
+models/resnet50/             best_resnet50.keras (Git LFS), class_names, leaf_reference.npz (fallback)
+models/densenet121/          best_densenet121.keras (Git LFS), class_names, leaf_reference.npz
+                             (older split, comparison only, not used by the app)
+notebooks/                   01 dataset analysis, 02 preprocessing, 04 ResNet50 and 05 EfficientNetB0
+                             (Kaggle, common split), 06 DenseNet121 (Kaggle, older split)
 scripts/                     dataset inspection, training, evaluation, leaf reference,
                              config check, prediction and integration tests
 artifacts/
-  plots/                     dataset, training curves, confusion matrix
-  reports/                   metrics, classification report, test results
+  plots/                     dataset plots; <model>/ training curves and confusion matrix
+  reports/                   dataset reports; <model>/ metrics, classification report, test results
 assets/hero_leaves.jpg       banner image
 tests/                       pytest suite, including Streamlit AppTest UI tests
 .streamlit/config.toml       Streamlit theme and server settings
@@ -263,100 +265,83 @@ The code is in `src/disease_detection/` (`model_config.py`, `preprocessing.py`,
 `model_loader.py`, `predictor.py`, `scope_check.py`). `model_config.py` selects the model
 (`DISEASE_MODEL`), its preprocessing, its leaf reference and its reports.
 
-### Default model: EfficientNetB0
+### Default model: EfficientNetB0 · fallback: ResNet50
 
-Trained on Kaggle (2× T4 GPU) with [`notebooks/05_smart_crop_care_efficientnetb0.ipynb`](notebooks/05_smart_crop_care_efficientnetb0.ipynb)
-on the **full** Kaggle dataset (`train/` + `valid/`, 87,841 images after removing 26 duplicates),
-using the same leaf-grouped 80/10/10 split method (0 leakage) and the same head and two-stage
-training as ResNet50 (5 epochs head, then 5 epochs fine-tuning `block6`–`block7`, Adam 1e-3 / 1e-5).
-EfficientNetB0 normalises pixels inside the model, so it takes raw 0–255 input.
+Both models were trained on Kaggle (2× T4 GPU) with the same notebook, which differs only in
+the model name: [`notebooks/05_smart_crop_care_efficientnetb0.ipynb`](notebooks/05_smart_crop_care_efficientnetb0.ipynb)
+and [`notebooks/04_smart_crop_care_resnet50.ipynb`](notebooks/04_smart_crop_care_resnet50.ipynb).
+They use **exactly the same train / validation / test images** (identical split fingerprints), so
+their results can be compared directly.
 
-| Split | Images | Accuracy | Macro precision | Macro recall | Macro F1 | Macro ROC-AUC | Top-3 |
-|---|---|---|---|---|---|---|---|
-| Train | 70,199 | 98.89% | 0.9893 | 0.9886 | 0.9888 | 1.0000 | 99.96% |
-| Validation | 8,832 | 98.31% | 0.9836 | 0.9828 | 0.9829 | 0.9999 | 99.90% |
-| **Test** | **8,810** | **98.09%** | **0.9812** | **0.9808** | **0.9808** | **0.9999** | **99.84%** |
+- **Head:** global average pooling → dropout 0.3 → Dense 256 (ReLU) → Dense 38 (softmax), on
+  ImageNet weights.
+- **Two-stage training:** the head for 5 epochs with the backbone frozen (Adam 1e-3), then 5 epochs
+  fine-tuning the last stage with BatchNorm frozen (Adam 1e-5). EfficientNetB0 fine-tunes
+  `block6`–`block7`; ResNet50 fine-tunes `conv5`.
+- **Augmentation:** random flips, rotation, zoom, translation, brightness and contrast. ModelCheckpoint,
+  EarlyStopping and ReduceLROnPlateau were used.
+- **Preprocessing:** EfficientNetB0 normalises pixels inside the model, so it takes raw 0–255 input.
+  ResNet50 uses `resnet50.preprocess_input`.
 
-4.39 M parameters (46 MB file), about 5× smaller and 2× faster on CPU than ResNet50.
-Weakest test classes: Tomato Target Spot (F1 0.90), Corn Cercospora leaf spot (0.92),
-Tomato Early blight (0.92). Reports: [`artifacts/reports/efficientnetb0/`](artifacts/reports/efficientnetb0/).
+**Results on the same 8,799 held-out test leaves:**
 
-**Non-leaf check for EfficientNetB0.** With 60 reference leaves per class, real leaves and
-non-leaf images overlapped. With **300 reference leaves per class** (11,400) and a threshold of
-**0.45**, 0 of 10,436 held-out real leaves were rejected and 33 of 33 non-leaf images were caught
-(lowest real-leaf score 0.472, highest non-leaf score 0.430). The margin is smaller than ResNet50's.
+| Model | Accuracy | Macro precision | Macro recall | Macro F1 | Macro ROC-AUC | Top-3 | Parameters | Training |
+|---|---|---|---|---|---|---|---|---|
+| **EfficientNetB0** | **98.45%** | 0.9847 | 0.9844 | 0.9844 | 0.9999 | 99.93% | 4.39 M (46 MB) | 100.5 min |
+| ResNet50 | 98.35% | 0.9839 | 0.9833 | 0.9834 | 0.9999 | 99.97% | 24.1 M (221 MB) | 106.9 min |
 
-**Fair comparison.** The two models were tested on different test sets. On the 533 test leaves that
-neither model saw in training: EfficientNetB0 98.69% (7 errors), ResNet50 98.31% (9 errors), so
-their accuracy is about equal; EfficientNetB0 is smaller and faster.
+| Split | Images | EfficientNetB0 accuracy | ResNet50 accuracy |
+|---|---|---|---|
+| Train | 70,138 | 98.84% | 98.97% |
+| Validation | 8,904 | 98.26% | 98.24% |
+| **Test** | **8,799** | **98.45%** | **98.35%** |
 
-### Fallback model: ResNet50
-
-Set `DISEASE_MODEL=resnet50` to use it. It was trained locally on half of the dataset.
-
-**Model** (`src/model/resnet50.py`): ResNet50 with ImageNet weights (`include_top=False`),
-followed by global average pooling, dropout 0.3, Dense 256 (ReLU) and a softmax over the
-38 classes. It was trained on CPU in two stages:
-
-1. Backbone frozen; the head trained for 5 epochs (Adam, learning rate 1e-3).
-2. The last residual stage (`conv5`) fine-tuned for 5 epochs (Adam, learning rate 1e-5),
-   with BatchNorm frozen.
-
-Training used random flips, rotation, zoom, translation, brightness and contrast
-changes, plus ModelCheckpoint, EarlyStopping and ReduceLROnPlateau.
+On the same test leaves EfficientNetB0 made 136 errors and ResNet50 145. A paired McNemar test
+gives p = 0.55, so **the two are equally accurate**. EfficientNetB0 is the default because it is
+about 5× smaller and about 2× faster on a CPU. The weakest classes for both are tomato diseases
+(EfficientNetB0: Early blight F1 0.94, Target Spot 0.94; ResNet50: Target Spot 0.90, Early blight
+0.93). Reports and plots: [`artifacts/reports/efficientnetb0/`](artifacts/reports/efficientnetb0/),
+[`artifacts/reports/resnet50/`](artifacts/reports/resnet50/), [`artifacts/plots/`](artifacts/plots/).
 
 **Supported crops (14):** Apple, Blueberry, Cherry, Corn (maize), Grape, Orange, Peach,
 Bell pepper, Potato, Raspberry, Soybean, Squash, Strawberry and Tomato.
 
-**Results** on a held-out test set that shares no leaf with the training data:
+**80% confidence threshold.** Measured on the test set: for EfficientNetB0 it flags 3.0% of images,
+catches 71% of the model's mistakes, and the remaining predictions are 99.54% accurate (ResNet50:
+2.1% flagged, 58% of mistakes caught, 99.29% accurate).
 
-| Split | Images | Accuracy | Macro F1 | Top-3 accuracy |
-|---|---|---|---|---|
-| Train | 42,114 | 98.61% | 0.9861 | 99.97% |
-| Validation | 5,304 | 97.72% | 0.9771 | 99.83% |
-| **Test** | **5,291** | **97.62%** | **0.9761** | **99.92%** |
+**Rejecting non-leaf images.** Softmax confidence cannot catch pictures that are not leaves: the
+model must pick one of its 38 classes, and it is often confident on faces or noise. So the check
+works on features instead:
 
-The weakest classes are tomato diseases (Target Spot F1 0.82, Early blight F1 0.90).
-Per-class numbers are in
-[`artifacts/reports/classification_report.txt`](artifacts/reports/classification_report.txt),
-and the plots are in [`artifacts/plots/`](artifacts/plots/).
-
-**80% confidence threshold.** This was chosen on the validation set. It flags 3.2% of
-images, catches 65% of the model's mistakes, and the remaining predictions are 99.2%
-accurate.
-
-**Rejecting non-leaf images.** Softmax confidence cannot catch pictures that are not
-leaves: the model must pick one of its 38 classes, and it is often close to 100% confident
-on faces or noise. So the check works on features instead:
-
-- Each image's 2048-value ResNet50 feature vector is compared with 2,280 real training
-  leaves (60 per class).
+- The image's feature vector (after global average pooling) is compared with 11,400 real training
+  leaves (300 per class).
 - The score is the mean cosine similarity to the 5 most similar leaves.
-- Below **0.60**, the image is rejected.
+- Below the model's threshold the image is rejected: **0.44** for EfficientNetB0, **0.60** for ResNet50.
 
-On 2,280 real leaves from the validation and test sets, none were rejected (lowest score
-0.64). On 33 non-leaf images, all 33
-were rejected (highest score 0.53). Details:
-[`scripts/build_leaf_reference.py`](scripts/build_leaf_reference.py) and
-[`artifacts/reports/leaf_scope_check.json`](artifacts/reports/leaf_scope_check.json).
+EfficientNetB0: of 10,703 held-out real leaves none were rejected (lowest score 0.468), and all 33
+non-leaf test images were rejected (highest score 0.417). ResNet50: no real leaf rejected in the
+Kaggle check (lowest 0.693) and all 33 non-leaf images rejected (highest 0.537). Details:
+[`scripts/build_leaf_reference.py`](scripts/build_leaf_reference.py),
+[`artifacts/reports/efficientnetb0/leaf_scope_check_app.json`](artifacts/reports/efficientnetb0/leaf_scope_check_app.json).
 
-**Dataset and leakage.** The model uses the Kaggle
+**Dataset and leakage.** The models use the Kaggle
 [New Plant Diseases Dataset](https://www.kaggle.com/datasets/vipoooool/new-plant-diseases-dataset),
 an augmented version of PlantVillage. Its provided `train/` and `valid/` folders share
-flipped or rotated copies of about 19% of source leaves. All 33 images in its `test/`
-folder are copies of `valid/` images.
+flipped or rotated copies of the same leaves, and all 33 images in its `test/` folder are
+copies of `valid/` images. So:
 
-So the folders were handled as follows:
+1. The `train/` and `valid/` folders were pooled (87,867 images), and 26 exact duplicates removed.
+2. Images were grouped by physical leaf: same leaf name or UUID in the file name, same MD5, same
+   perceptual hash, or a perceptual hash at most 4 bits different (the same leaf photographed
+   twice). This gave 45,181 groups.
+3. Whole groups were split 80/10/10 per class (seed 42): 70,138 / 8,904 / 8,799 images.
 
-1. The `train/` and `valid/` folders were pooled.
-2. Exact duplicates were removed, leaving 52,709 images.
-3. Images were grouped by physical leaf.
-4. Whole groups were split 80/10/10 per class.
-
-No file, near-duplicate or source leaf appears in more than one split. See
-[`notebooks/01_dataset_analysis.ipynb`](notebooks/01_dataset_analysis.ipynb),
-[`notebooks/02_data_preprocessing.ipynb`](notebooks/02_data_preprocessing.ipynb) and
-[`data/splits/`](data/splits/).
+A leakage check in the notebook found **0** shared files, leaf groups, leaf names, UUIDs, identical
+or near-identical images between the splits. See [`data/splits_kaggle/`](data/splits_kaggle/)
+(`leakage_check.json`). The local dataset analysis is in
+[`notebooks/01_dataset_analysis.ipynb`](notebooks/01_dataset_analysis.ipynb) and
+[`notebooks/02_data_preprocessing.ipynb`](notebooks/02_data_preprocessing.ipynb).
 
 ## 9. Fertilizer and Treatment
 
@@ -532,22 +517,24 @@ news and chatbot tests mock the external services, so they run offline.
 
 ## Reproduce training (optional)
 
-1. Download the Kaggle dataset and copy its `train/`, `valid/` and `test/` folders into
-   `Dataset/raw/`.
-2. Inspect the data and build the leaf-grouped splits:
-   ```bash
-   python scripts/inspect_dataset.py
-   python -m src.preprocessing.splits
-   ```
-3. Train both stages and evaluate. This takes several hours on CPU and resumes if it is
-   interrupted:
-   ```bash
-   python scripts/train_resnet50.py --evaluate
-   ```
-4. Rebuild the reference leaves used to reject non-leaf images:
-   ```bash
-   python scripts/build_leaf_reference.py
-   ```
+The app's two models were trained on Kaggle:
+
+1. Open [`notebooks/05_smart_crop_care_efficientnetb0.ipynb`](notebooks/05_smart_crop_care_efficientnetb0.ipynb)
+   or [`notebooks/04_smart_crop_care_resnet50.ipynb`](notebooks/04_smart_crop_care_resnet50.ipynb) on Kaggle,
+   add the *New Plant Diseases Dataset* as input, choose a GPU (T4 ×2) and run all cells
+   (about 1.7–1.8 hours each).
+2. Check that Step 5 prints the same split fingerprint for every model and that Step 5b prints
+   "NO DATA LEAKAGE FOUND".
+3. Copy `models/<model>/` and the reports from the results zip into the project.
+
+A local CPU pipeline also exists (slow: several hours, resumable):
+
+```bash
+python scripts/inspect_dataset.py
+python -m src.preprocessing.splits
+python scripts/train_resnet50.py --evaluate
+python scripts/build_leaf_reference.py    # rebuild the non-leaf reference for the active model
+```
 
 ## License
 
