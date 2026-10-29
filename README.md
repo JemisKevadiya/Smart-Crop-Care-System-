@@ -303,6 +303,19 @@ about 5× smaller and about 2× faster on a CPU. The weakest classes for both ar
 0.93). Reports and plots: [`artifacts/reports/efficientnetb0/`](artifacts/reports/efficientnetb0/),
 [`artifacts/reports/resnet50/`](artifacts/reports/resnet50/), [`artifacts/plots/`](artifacts/plots/).
 
+**ResNet50 (fallback) — full results.** Trained on Kaggle (2× T4) in 106.9 min (stage 1 53.2 min,
+stage 2 53.7 min); best validation accuracy 0.9824 after fine-tuning `conv5`.
+
+| Split | Images | Accuracy | Macro precision | Macro recall | Macro F1 | Weighted F1 | Macro ROC-AUC | Top-3 |
+|---|---|---|---|---|---|---|---|---|
+| Train | 70,138 | 98.97% | 0.9900 | 0.9895 | 0.9896 | 0.9897 | 1.0000 | 99.99% |
+| Validation | 8,904 | 98.24% | 0.9833 | 0.9821 | 0.9825 | 0.9823 | 0.9999 | 99.94% |
+| **Test** | **8,799** | **98.35%** | **0.9839** | **0.9833** | **0.9834** | **0.9835** | **0.9999** | **99.97%** |
+
+Lowest test F1: Tomato Target Spot 0.904, Tomato Early blight 0.931, Tomato Spider mites 0.946,
+Corn Cercospora leaf spot 0.948, Tomato Late blight 0.949. Per-class numbers:
+[`artifacts/reports/resnet50/classification_report.txt`](artifacts/reports/resnet50/classification_report.txt).
+
 **Supported crops (14):** Apple, Blueberry, Cherry, Corn (maize), Grape, Orange, Peach,
 Bell pepper, Potato, Raspberry, Soybean, Squash, Strawberry and Tomato.
 
