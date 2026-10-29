@@ -1,10 +1,10 @@
 {
   "model": "DenseNet121",
-  "reference_images": 2280,
+  "reference_images": 11400,
   "k": 5,
   "val": {
     "images": 1900,
-    "min_score": 0.5556
+    "min_score": 0.7137
   },
   "test": {
     "images": 380,
@@ -13,8 +13,8 @@
   "threshold": 0.6,
   "out_of_scope": {
     "images": 27,
-    "max_score": 0.5836,
+    "max_score": 0.573,
     "caught": 27,
-    "mean_softmax_confidence_without_check": 0.6818
+    "mean_softmax_confidence_without_check": 0.6964
   }
 }

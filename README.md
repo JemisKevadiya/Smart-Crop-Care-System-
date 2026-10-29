@@ -155,9 +155,9 @@ data/
 models/efficientnetb0/       best_efficientnetb0.keras (Git LFS), class_names, leaf_reference.npz (default model)
 models/resnet50/             best_resnet50.keras (Git LFS), class_names, leaf_reference.npz (fallback)
 models/densenet121/          best_densenet121.keras (Git LFS), class_names, leaf_reference.npz
-                             (older split, comparison only, not used by the app)
-notebooks/                   01 dataset analysis, 02 preprocessing, 04 ResNet50 and 05 EfficientNetB0
-                             (Kaggle, common split), 06 DenseNet121 (Kaggle, older split)
+                             (comparison only, not used by the app)
+notebooks/                   01 dataset analysis, 02 preprocessing, 04 ResNet50, 05 EfficientNetB0
+                             and 06 DenseNet121 (Kaggle, all on the common split)
 scripts/                     dataset inspection, training, evaluation, leaf reference,
                              config check, prediction and integration tests
 artifacts/
@@ -271,7 +271,8 @@ Both models were trained on Kaggle (2× T4 GPU) with the same notebook, which di
 the model name: [`notebooks/05_smart_crop_care_efficientnetb0.ipynb`](notebooks/05_smart_crop_care_efficientnetb0.ipynb)
 and [`notebooks/04_smart_crop_care_resnet50.ipynb`](notebooks/04_smart_crop_care_resnet50.ipynb).
 They use **exactly the same train / validation / test images** (identical split fingerprints), so
-their results can be compared directly.
+their results can be compared directly. A third model, DenseNet121, was trained the same way for
+comparison only ([`notebooks/06_smart_crop_care_densenet121.ipynb`](notebooks/06_smart_crop_care_densenet121.ipynb)).
 
 - **Head:** global average pooling → dropout 0.3 → Dense 256 (ReLU) → Dense 38 (softmax), on
   ImageNet weights.
@@ -289,15 +290,18 @@ their results can be compared directly.
 |---|---|---|---|---|---|---|---|---|
 | **EfficientNetB0** | **98.45%** | 0.9847 | 0.9844 | 0.9844 | 0.9999 | 99.93% | 4.39 M (46 MB) | 100.5 min |
 | ResNet50 | 98.35% | 0.9839 | 0.9833 | 0.9834 | 0.9999 | 99.97% | 24.1 M (221 MB) | 106.9 min |
+| DenseNet121 (comparison) | 96.95% | 0.9705 | 0.9695 | 0.9695 | 0.9997 | 99.81% | 7.3 M (50 MB) | 102.9 min |
 
-| Split | Images | EfficientNetB0 accuracy | ResNet50 accuracy |
-|---|---|---|---|
-| Train | 70,138 | 98.84% | 98.97% |
-| Validation | 8,904 | 98.26% | 98.24% |
-| **Test** | **8,799** | **98.45%** | **98.35%** |
+| Split | Images | EfficientNetB0 accuracy | ResNet50 accuracy | DenseNet121 accuracy |
+|---|---|---|---|---|
+| Train | 70,138 | 98.84% | 98.97% | 97.67% |
+| Validation | 8,904 | 98.26% | 98.24% | 96.86% |
+| **Test** | **8,799** | **98.45%** | **98.35%** | **96.95%** |
 
-On the same test leaves EfficientNetB0 made 136 errors and ResNet50 145. A paired McNemar test
-gives p = 0.55, so **the two are equally accurate**. EfficientNetB0 is the default because it is
+On the same test leaves EfficientNetB0 made 136 errors, ResNet50 145 and DenseNet121 268. Paired
+McNemar tests: EfficientNetB0 vs ResNet50 p = 0.55, so **these two are equally accurate**; both are
+significantly better than DenseNet121 (p < 0.0001). The full table is in
+[`artifacts/reports/model_comparison.csv`](artifacts/reports/model_comparison.csv). EfficientNetB0 is the default because it is
 about 5× smaller and about 2× faster on a CPU. The weakest classes for both are tomato diseases
 (EfficientNetB0: Early blight F1 0.94, Target Spot 0.94; ResNet50: Target Spot 0.90, Early blight
 0.93). Reports and plots: [`artifacts/reports/efficientnetb0/`](artifacts/reports/efficientnetb0/),
