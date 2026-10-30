@@ -1,7 +1,7 @@
 """End-to-end test: leaf image -> ResNet50 -> disease -> fertilizer/treatment advice.
 
 Uses held-out test-split images (never seen in training) and writes
-artifacts/reports/integration_test.json.
+artifacts/reports/<active model>/integration_test.json.
 
     python scripts/test_integration.py
 """
@@ -19,11 +19,12 @@ import pandas as pd  # noqa: E402
 from PIL import Image  # noqa: E402
 
 from src.disease_detection import DiseasePredictor  # noqa: E402
+from src.disease_detection.model_config import ACTIVE  # noqa: E402
 from src.fertilizer.recommendation import NOT_AVAILABLE  # noqa: E402
 from src.integration import CropCareAnalyzer, format_report  # noqa: E402
 from src.preprocessing import config, splits  # noqa: E402
 
-REPORT = ROOT / "artifacts" / "reports" / "integration_test.json"
+REPORT = ROOT / "artifacts" / "reports" / ACTIVE.folder / "integration_test.json"
 PER_CLASS = 10
 ADVICE = ["fertilizer", "treatment", "eco_friendly_treatment", "chemical_treatment"]
 
@@ -34,7 +35,7 @@ def section(title):
 
 def batch_run(analyzer):
     section(f"1. {PER_CLASS} held-out test images per class")
-    sample = (splits.load_split("test").groupby("label")
+    sample = (splits.load_model_split("test").groupby("label")
               .sample(PER_CLASS, random_state=config.SEED).reset_index(drop=True))
     rows, t0 = [], time.perf_counter()
     for _, r in sample.iterrows():
@@ -117,7 +118,7 @@ def low_confidence_cases(analyzer, df):
 
 def error_cases(analyzer):
     section("4. Error handling")
-    leaf = ROOT / splits.load_split("test")["path"].iloc[0]
+    leaf = ROOT / splits.load_model_split("test")["path"].iloc[0]
     data = leaf.read_bytes()
     checks = {}
 
@@ -148,7 +149,8 @@ def error_cases(analyzer):
         tmp.unlink(missing_ok=True)
 
     broken = DiseasePredictor()
-    broken.model = lambda *a, **k: (_ for _ in ()).throw(RuntimeError("simulated failure"))
+    # predict() runs the feature model (features + probabilities), so break that one.
+    broken._feature_model = lambda *a, **k: (_ for _ in ()).throw(RuntimeError("simulated failure"))
     check("model failure", CropCareAnalyzer(predictor=broken).analyze(leaf), "model_error")
 
     assert all(c["passed"] for c in checks.values()), "error handling check failed"

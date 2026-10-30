@@ -166,6 +166,25 @@ def load_split(name, splits_dir=config.SPLITS_DIR):
     return pd.read_csv(splits_dir / f"{name}.csv")
 
 
+def load_model_split(name, splits_dir=config.SPLITS_DIR, kaggle_dir=config.KAGGLE_SPLITS_DIR):
+    """Local images of the split the current models were trained on (data/splits_kaggle).
+
+    The models were trained on Kaggle with the full dataset, so their val/test lists
+    hold Kaggle paths. They are matched to the local copy by MD5; "train" is every
+    local image in neither list. Use this, not load_split(), for anything that must
+    be unseen by the models (the local split in data/splits is an older one).
+    """
+    local = pd.concat([load_split(s, splits_dir) for s in config.SPLIT_RATIOS], ignore_index=True)
+    held = {s: set(pd.read_csv(kaggle_dir / f"{s}.csv")["md5"]) for s in ("val", "test")}
+    if name in held:
+        keep = local["md5"].isin(held[name])
+    elif name == "train":
+        keep = ~local["md5"].isin(held["val"] | held["test"])
+    else:
+        raise ValueError(f"unknown split {name!r}")
+    return local[keep].assign(split=name).reset_index(drop=True)
+
+
 def load_class_names(splits_dir=config.SPLITS_DIR):
     return json.loads((splits_dir / "class_names.json").read_text())
 

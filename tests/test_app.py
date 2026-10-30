@@ -473,7 +473,7 @@ def test_full_flow_home_to_assistant(monkeypatch, news_feeds):
     assert "**Fertilizer:**" in summary and "**Treatment:**" in summary
     assert ("**Weather in Surat, Gujarat, India:** 30.2 °C, 80% humidity, light rain, "
             "rain today 3.5 mm") in summary
-    assert "**Latest agriculture update:** Centre hikes MSP for rabi crops" in summary
+    assert "**Top agriculture update:** Centre hikes MSP for rabi crops" in summary
 
     # 5. The assistant is part of the dashboard and gets the whole crop context.
     at.chat_input(key="dashboard_input").set_value("What should I do now?").run()
@@ -645,7 +645,7 @@ def test_dashboard_order_and_crop_news_first(news_feeds):
     assert _news_titles(at)[0] == "Late blight alert for tomato growers in Nashik"
     assert len(at.get("link_button")) == 3          # dashboard shows 3, then "Show more"
     assert any("News mentioning **Tomato**" in c.value for c in at.caption)
-    assert "**Latest agriculture update:** Late blight alert" in _texts(at)        # summary line
+    assert "**Top agriculture update:** Late blight alert" in _texts(at)        # summary line
     assert _has_advice(at)                         # news never replaces the advice
 
 

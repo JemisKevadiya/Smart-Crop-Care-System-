@@ -230,7 +230,10 @@ with st.sidebar:
     with st.expander("Built with", icon=":material/build:"):
         st.markdown(f"- Python, TensorFlow {tf_version} / Keras\n"
                     f"- Streamlit {st.__version__}\n"
-                    "- Pillow, NumPy, pandas, scikit-learn")
+                    "- Pillow, NumPy, pandas\n"
+                    "- LangChain + Groq (assistant)\n"
+                    "- OpenWeather and Open-Meteo (weather), ipinfo.io (approximate location)\n"
+                    "- RSS feeds: The Economic Times, The Hindu BusinessLine, Krishi Jagran (news)")
 
 # --- Pages -------------------------------------------------------------------------
 page = st.navigation(

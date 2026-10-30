@@ -8,7 +8,7 @@
 5. Input validation / error handling cases.
 6. Non-leaf inputs, to show how low-confidence handling behaves.
 
-Writes artifacts/reports/prediction_test.json.
+Writes artifacts/reports/<active model>/prediction_test.json.
 
     python scripts/test_prediction.py
 """
@@ -31,22 +31,35 @@ from src.disease_detection import (  # noqa: E402
     ImageValidationError,
     ModelLoadError,
 )
+from src.disease_detection.model_config import ACTIVE, preprocess_input  # noqa: E402
 from src.disease_detection.predictor import DEFAULT_CONFIDENCE_THRESHOLD  # noqa: E402
 from src.disease_detection.preprocessing import preprocess_image  # noqa: E402
 from src.preprocessing import config, pipeline, splits  # noqa: E402
 
-REPORT = ROOT / "artifacts" / "reports" / "prediction_test.json"
+REPORT = ROOT / "artifacts" / "reports" / ACTIVE.folder / "prediction_test.json"
 
 
 def section(title):
     print(f"\n{'=' * 8} {title} {'=' * 8}", flush=True)
 
 
+def evaluation_probs(predictor, manifest, batch_size=64):
+    """Probabilities via the evaluation path (TensorFlow decode and resize) with the
+    active model's own preprocessing. pipeline.make_dataset() is not used here: it
+    always applies ResNet50 preprocessing, because it is the ResNet50 training pipeline."""
+    import tensorflow as tf
+    paths = [str(ROOT / p) for p in manifest["path"]]
+    out = []
+    for i in range(0, len(paths), batch_size):
+        batch = tf.stack([pipeline.load_image(tf.constant(p)) for p in paths[i:i + batch_size]])
+        out.append(predictor.predict_probabilities(preprocess_input(batch)))
+    return np.concatenate(out)
+
+
 def threshold_analysis(predictor):
     section("1. Confidence threshold analysis (validation split)")
-    val = splits.load_split("val")
-    probs = predictor.model.predict(pipeline.make_dataset("val", batch_size=64, training=False),
-                                    verbose=0)
+    val = splits.load_model_split("val")
+    probs = evaluation_probs(predictor, val)
     conf, pred = probs.max(axis=1), probs.argmax(axis=1)
     correct = pred == val["label_idx"].to_numpy()
     rows = []
@@ -71,9 +84,8 @@ def threshold_analysis(predictor):
 
 def consistency_check(predictor):
     section("2. Predictor vs evaluation pipeline (same files)")
-    sample = splits.load_split("test").sample(64, random_state=0)
-    ref = predictor.model.predict(
-        pipeline.make_dataset("test", batch_size=64, training=False, manifest=sample), verbose=0)
+    sample = splits.load_model_split("test").sample(64, random_state=0)
+    ref = evaluation_probs(predictor, sample)
     ours = np.stack([predictor.predict_probabilities(preprocess_image(ROOT / p))[0]
                      for p in sample["path"]])
     diff = float(np.abs(ref - ours).max())
@@ -85,7 +97,7 @@ def consistency_check(predictor):
 
 def per_class_test(predictor):
     section("3. One held-out test image per class via predict(path)")
-    sample = splits.load_split("test").groupby("label").sample(1, random_state=config.SEED)
+    sample = splits.load_model_split("test").groupby("label").sample(1, random_state=config.SEED)
     rows, times = [], []
     for _, r in sample.iterrows():
         t0 = time.perf_counter()
@@ -136,7 +148,7 @@ def encode(image, fmt, **kw):
 
 def error_handling(predictor):
     section("5. Validation and error handling")
-    leaf_path = ROOT / splits.load_split("test")["path"].iloc[0]
+    leaf_path = ROOT / splits.load_model_split("test")["path"].iloc[0]
     leaf = Image.open(leaf_path)
     jpeg = leaf_path.read_bytes()
     rotated_big = leaf.resize((1200, 900))
@@ -215,7 +227,7 @@ def main():
     report["supplied_test_images"] = supplied_test_images(predictor)
     report["error_handling"] = error_handling(predictor)
     report["non_leaf_inputs"] = non_leaf_inputs(predictor)
-    example = predictor.predict(ROOT / splits.load_split("test")["path"].iloc[0])
+    example = predictor.predict(ROOT / splits.load_model_split("test")["path"].iloc[0])
     report["example_prediction"] = example.to_dict()
     section("Example Prediction object")
     print(json.dumps(example.to_dict(), indent=2))

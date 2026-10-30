@@ -32,11 +32,11 @@ def get_json(url, params, service, timeout=TIMEOUT_SECONDS):
     """GET a JSON document, turning every failure into a WeatherServiceError."""
     try:
         response = requests.get(url, params=params, timeout=timeout)
-    except requests.Timeout as exc:
+    except requests.Timeout:
         raise WeatherServiceError(
             f"{service} did not respond within {timeout} seconds. Please try again later."
         ) from None
-    except requests.ConnectionError as exc:
+    except requests.ConnectionError:
         raise WeatherServiceError(
             f"Could not connect to {service}. Check your internet connection.") from None
     except requests.RequestException as exc:

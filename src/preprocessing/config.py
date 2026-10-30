@@ -7,6 +7,7 @@ ROOT = Path(__file__).resolve().parents[2]
 DATASET_DIR = ROOT / "Dataset" / "raw"
 INVENTORY_CSV = ROOT / "artifacts" / "reports" / "dataset_inventory.csv"
 SPLITS_DIR = ROOT / "data" / "splits"
+KAGGLE_SPLITS_DIR = ROOT / "data" / "splits_kaggle"   # split used to train the current models
 PLOTS_DIR = ROOT / "artifacts" / "plots"
 
 IMAGE_SIZE = (224, 224)

@@ -1,12 +1,13 @@
 """Build the reference leaves used to reject non-leaf images, and evaluate it.
 
-    python scripts/build_leaf_reference.py [--per-class 60] [--threshold 0.60]
+    python scripts/build_leaf_reference.py [--per-class 300] [--threshold 0.44]
 
-1. Extracts ResNet50 features (gap layer) for --per-class training images per
-   class and saves them to models/resnet50/leaf_reference.npz.
+1. Extracts the active model's features (gap layer) for --per-class training images
+   per class and saves them to models/<active model>/leaf_reference.npz (this
+   overwrites the current reference).
 2. Scores real leaves (validation and test samples) and a set of out-of-scope
    images (faces, scenes, plots, synthetic patterns, the cartoon banner) and
-   writes artifacts/reports/leaf_scope_check.json.
+   writes artifacts/reports/<active model>/leaf_scope_check_app.json.
 
 The threshold sits between the lowest real-leaf score and the highest
 out-of-scope score. Needs the dataset in Dataset/raw (about 15 minutes on CPU).
@@ -34,11 +35,11 @@ from src.disease_detection.scope_check import (  # noqa: E402
 )
 from src.preprocessing import config, splits  # noqa: E402
 
-REPORT_PATH = config.ROOT / "artifacts" / "reports" / "leaf_scope_check.json"
+REPORT_PATH = config.ROOT / "artifacts" / "reports" / ACTIVE.folder / "leaf_scope_check_app.json"
 
 
 def sample_split(name, per_class, seed=7):
-    df = splits.load_split(name)
+    df = splits.load_model_split(name)
     return df.groupby("label").sample(per_class, random_state=seed)
 
 

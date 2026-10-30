@@ -159,10 +159,10 @@ def summary_lines(context):
         lines.append(":material/partly_cloudy_day: **Weather:** no location set yet.")
     news = context.news.get("items") or []
     if news:
-        lines.append(f":material/newspaper: **Latest agriculture update:** "
+        lines.append(f":material/newspaper: **Top agriculture update:** "
                      f"{md_escape(news[0]['title'])} ({news[0]['source']})")
     elif context.news.get("status") == "unavailable":
-        lines.append(":material/newspaper: **Latest agriculture update:** live farmer news is "
+        lines.append(":material/newspaper: **Top agriculture update:** live farmer news is "
                      "temporarily unavailable.")
     return lines
 

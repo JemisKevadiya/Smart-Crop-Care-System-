@@ -21,9 +21,31 @@ The system combines:
 - **Live farmer news**: from the RSS feeds of Indian agriculture publishers
 - **Agriculture chatbot**: Groq LLM through LangChain, using the app's results
 
-## 2. Key Features
+It is a decision-support tool, not a replacement for an agriculture expert.
 
-All features below are implemented and tested (see [Tests](#tests)).
+## 2. Features and Verification Status
+
+These statuses come from the test run on 30 October 2026, reported in
+[`reports/module_test_results.md`](reports/module_test_results.md) and
+[`reports/end_to_end_test.md`](reports/end_to_end_test.md).
+- **Real:** tested with real files, models and live services.
+- **Mocked:** tested only with fake services in pytest.
+
+| Feature | Status | How it was verified |
+|---|---|---|
+| Disease detection (EfficientNetB0) | Verified working | Real: held-out images, real browser upload |
+| Invalid and non-leaf image rejection | Verified working | Real: 16 invalid-input cases; non-leaf photos rejected |
+| Fertilizer and treatment advice | Verified working | Real, plus 23 unit tests |
+| Current weather and 7-day forecast | Verified working | Real (OpenWeather, Open-Meteo); real no-key, wrong-key and no-network cases |
+| Live farmer news | Verified working | Real (3 RSS feeds); real no-network case |
+| Agriculture Assistant (English) | Verified working | Real (live Groq); real wrong-key and no-network cases |
+| Hindi and Gujarati answers | Mocked only | Unit tests check the language instruction; real answers not checked |
+| Location by coordinates | Mocked only | Unit tests; the real browser test used city search |
+| Approximate location from IP (ipinfo.io) | Not tested | No unit or real test |
+| Combined dashboard and summary | Verified working | Real browser, 12/12 stages |
+| Session kept across refresh | Verified working | Real browser reload, plus AppTest tests |
+| ResNet50 fallback model | Verified working | All 178 tests with `DISEASE_MODEL=resnet50`; app predictions match the Kaggle results |
+| Docker image | Verified working | Rebuilt 30 October 2026; real browser against the container, 12/12 stages |
 
 **Disease detection**
 - Upload a JPEG, PNG, BMP or WEBP leaf photo (up to 15 MB). The app shows the crop, the
@@ -62,11 +84,13 @@ All features below are implemented and tested (see [Tests](#tests)).
 
 **Session kept across refresh**
 - Results, chat and the last leaf survive page switches and a browser refresh (F5).
+- The session id is in the page address (`?sid=`), so anyone who opens a copied link sees
+  that session (see [Known Limitations](#15-known-limitations)).
 
 **Docker**
 - A ready-to-run container image (see [Run with Docker](#run-with-docker)).
 
-## 3. System Architecture
+## 3. System Architecture and Workflow
 
 ```
 Farmer
@@ -97,7 +121,7 @@ Context** (`src/context/crop_context.py`):
 
 The context contains no images, models or API keys. `src/integration/analyzer.py`
 (`CropCareAnalyzer`) chains image → disease → advice, and the pages only call these
-modules.
+modules. Each module is described in [Appendix A](#appendix-a-module-details).
 
 App pages (`app_pages/`):
 
@@ -125,7 +149,7 @@ App pages (`app_pages/`):
 | Deployment | Docker, Docker Compose |
 | Model storage | Git LFS |
 
-## 5. Project Structure
+## 5. Repository Structure
 
 ```
 app.py                       Streamlit entry point: navigation, sidebar, shared styles
@@ -136,7 +160,7 @@ app_pages/
   news.py                    live farmer news
   assistant.py               Agriculture Assistant chat
 src/
-  disease_detection/         image validation, preprocessing, model loading,
+  disease_detection/         model choice, image validation, preprocessing, model loading,
                              prediction, non-leaf scope check
   fertilizer/                recommendation table loader and get_recommendation()
   integration/               CropCareAnalyzer: image -> disease -> advice
@@ -146,12 +170,12 @@ src/
   chatbot/                   Groq/LangChain model, system prompt, AgricultureAssistant
   ui/                        shared Streamlit parts: location picker, news panel, chat panel
   preprocessing/             dataset config, leaf-grouped splits, tf.data training pipeline
-  model/                     ResNet50 definition, two-stage training, evaluation
+  model/                     ResNet50 definition, two-stage training, evaluation (local pipeline)
   env.py                     reads settings from the environment or .env
 data/
   fertilizer/                fertilizer_recommendations.csv (archive/ holds the old table)
-  splits/                    local dataset split used by the scripts and tests (local copy of the data)
-  splits_kaggle/             common split of the full Kaggle data (val/test lists, split report, leakage check)
+  splits/                    local dataset split, the older local pipeline's split, still used by some tests
+  splits_kaggle/             split used to train the current models (val/test lists, split report, leakage check)
 models/efficientnetb0/       best_efficientnetb0.keras (Git LFS), class_names, leaf_reference.npz (default model)
 models/resnet50/             best_resnet50.keras (Git LFS), class_names, leaf_reference.npz (fallback)
 models/densenet121/          best_densenet121.keras (Git LFS), class_names, leaf_reference.npz
@@ -162,7 +186,9 @@ scripts/                     dataset inspection, training, evaluation, leaf refe
                              config check, prediction and integration tests
 artifacts/
   plots/                     dataset plots; <model>/ training curves and confusion matrix
-  reports/                   dataset reports; <model>/ metrics, classification report, test results
+  reports/                   dataset reports; <model>/ metrics, classification report, test results;
+                             model_comparison.csv
+reports/                     project audit, fix log, test results, model validation, readiness review
 assets/hero_leaves.jpg       banner image
 tests/                       pytest suite, including Streamlit AppTest UI tests
 .streamlit/config.toml       Streamlit theme and server settings
@@ -172,87 +198,16 @@ requirements.txt
 LICENSE
 ```
 
-`Dataset/raw/` (the Kaggle images) is not in the repository. It is needed only for
-training and for most tests, not for running the app.
+`Dataset/raw/` (the Kaggle images) is not in the repository. See [Dataset](#7-dataset).
 
-## 6. Installation
-
-Requires Python 3.11. It was tested with TensorFlow 2.21 and Streamlit 1.64 on Windows.
-
-1. **Clone the project.** The model file is stored with Git LFS, so install Git LFS first:
-   ```bash
-   git lfs install
-   git clone https://github.com/JemisKevadiya/Smart-Crop-Care-System-.git
-   cd Smart-Crop-Care-System-
-   ```
-2. **Create a virtual environment:**
-   ```bash
-   python -m venv .venv
-   .venv\Scripts\activate          # Windows  (Linux/macOS: source .venv/bin/activate)
-   ```
-3. **Install the requirements:**
-   ```bash
-   pip install -r requirements.txt
-   ```
-4. **Configure `.env`.** Copy `.env.example` to `.env` and add your keys (see
-   [Environment Variables](#7-environment-variables)). To check the setup, run:
-   ```bash
-   python scripts/check_config.py            # add --online to test the keys
-   ```
-5. **Run Streamlit:**
-   ```bash
-   streamlit run app.py
-   ```
-   Then open http://localhost:8501.
-
-### Run with Docker
-
-The image contains only what the app needs to run: the trained model, the advice table,
-the app code and CPU-only TensorFlow (`requirements-docker.txt`). It contains no dataset,
-notebooks, tests or API keys. The keys are passed in when the container starts.
-
-```bash
-docker build -t smart-crop-care .
-docker run --rm -p 8501:8501 --env-file .env smart-crop-care
-```
-
-Or, with Docker Compose:
-
-```bash
-docker compose up --build
-```
-
-Then open http://localhost:8501. The container uses about 600–700 MB of memory once the
-model has loaded.
-
-## 7. Environment Variables
-
-Settings are read from the environment or from `.env` in the project folder. `.env` is
-git-ignored: never commit it. Key values are never printed or stored by the app.
-
-```
-OPENWEATHER_API_KEY=your_openweather_api_key_here
-GROQ_API_KEY=your_groq_api_key_here
-```
-
-| Variable | Required | Purpose |
-|---|---|---|
-| `GROQ_API_KEY` | For the assistant | Agriculture Assistant (free key at console.groq.com). Without it, the app shows that the assistant is unavailable. |
-| `OPENWEATHER_API_KEY` | Optional | Current weather from OpenWeather. Without it, Open-Meteo is used. |
-| `GROQ_MODEL` | Optional | A different Groq model (default `openai/gpt-oss-120b`). |
-| `GROQ_FALLBACK_MODEL` | Optional | Backup model used when the main one is rate-limited (default `openai/gpt-oss-20b`; `none` turns it off). |
-| `NEWS_FEEDS` | Optional | Replaces the default news feeds: `Publisher\|feed URL\|all` entries separated by `;`. |
-| `DISEASE_MODEL` | Optional | `efficientnetb0` (default) or `resnet50`. If the chosen model's files are missing, ResNet50 is used. |
-
-Live farmer news needs no API key.
-
-## 8. Disease Detection
+## 6. Plant Disease Model
 
 ```
 Image
   → Validation      format (JPEG/PNG/BMP/WEBP), size ≤ 15 MB, not empty,
                     not corrupted, not blank
-  → Preprocessing   centre square crop, resize to 224×224, model-specific scaling
+  → Preprocessing   EXIF rotation fix, RGB, centre square crop, resize to 224×224,
+                    model-specific scaling
                     (EfficientNetB0: raw 0–255 pixels; ResNet50: resnet50.preprocess_input)
   → EfficientNetB0  softmax over 38 classes → disease + confidence (top 3 kept)
   → Scope check     features compared with real training leaves;
@@ -265,7 +220,14 @@ The code is in `src/disease_detection/` (`model_config.py`, `preprocessing.py`,
 `model_loader.py`, `predictor.py`, `scope_check.py`). `model_config.py` selects the model
 (`DISEASE_MODEL`), its preprocessing, its leaf reference and its reports.
 
-### Default model: EfficientNetB0 · fallback: ResNet50
+### Production model: EfficientNetB0 · fallback: ResNet50
+
+**Production model check (30 October 2026):**
+- With no `DISEASE_MODEL` set, the app uses EfficientNetB0. The running app showed "Identified from the image by the EfficientNetB0 model".
+- All three models take 224×224×3 input, output 38 classes, and share the same class order.
+- On the 5,273 test images available locally, the app's image path gave **the same top prediction as the Kaggle evaluation for 100% of images**, for every model.
+
+Details: [`reports/model_validation.md`](reports/model_validation.md).
 
 Both models were trained on Kaggle (2× T4 GPU) with the same notebook, which differs only in
 the model name: [`notebooks/05_smart_crop_care_efficientnetb0.ipynb`](notebooks/05_smart_crop_care_efficientnetb0.ipynb)
@@ -284,7 +246,7 @@ comparison only ([`notebooks/06_smart_crop_care_densenet121.ipynb`](notebooks/06
 - **Preprocessing:** EfficientNetB0 normalises pixels inside the model, so it takes raw 0–255 input.
   ResNet50 uses `resnet50.preprocess_input`.
 
-**Results on the same 8,799 held-out test leaves:**
+**Results on the same 8,799 held-out test leaves (Kaggle evaluation):**
 
 | Model | Accuracy | Macro precision | Macro recall | Macro F1 | Macro ROC-AUC | Top-3 | Parameters | Training |
 |---|---|---|---|---|---|---|---|---|
@@ -323,9 +285,9 @@ Corn Cercospora leaf spot 0.948, Tomato Late blight 0.949. Per-class numbers:
 **Supported crops (14):** Apple, Blueberry, Cherry, Corn (maize), Grape, Orange, Peach,
 Bell pepper, Potato, Raspberry, Soybean, Squash, Strawberry and Tomato.
 
-**80% confidence threshold.** Measured on the test set: for EfficientNetB0 it flags 3.0% of images,
-catches 71% of the model's mistakes, and the remaining predictions are 99.54% accurate (ResNet50:
-2.1% flagged, 58% of mistakes caught, 99.29% accurate).
+**80% confidence threshold (EfficientNetB0):**
+- **Test set:** it flags 3.0% of images, catches 71% of the model's mistakes, and the remaining predictions are 99.54% accurate. ResNet50: 2.1% flagged, 58% of mistakes caught, 99.29% accurate.
+- **5,430 held-out validation images (measured locally):** it flags 3.3%, catches 65% of mistakes, and the remaining predictions are 99.37% accurate.
 
 **Rejecting non-leaf images.** Softmax confidence cannot catch pictures that are not leaves: the
 model must pick one of its 38 classes, and it is often confident on faces or noise. So the check
@@ -342,7 +304,9 @@ Kaggle check (lowest 0.693) and all 33 non-leaf images rejected (highest 0.537).
 [`scripts/build_leaf_reference.py`](scripts/build_leaf_reference.py),
 [`artifacts/reports/efficientnetb0/leaf_scope_check_app.json`](artifacts/reports/efficientnetb0/leaf_scope_check_app.json).
 
-**Dataset and leakage.** The models use the Kaggle
+## 7. Dataset
+
+The models use the Kaggle
 [New Plant Diseases Dataset](https://www.kaggle.com/datasets/vipoooool/new-plant-diseases-dataset),
 an augmented version of PlantVillage. Its provided `train/` and `valid/` folders share
 flipped or rotated copies of the same leaves, and all 33 images in its `test/` folder are
@@ -360,7 +324,261 @@ or near-identical images between the splits. See [`data/splits_kaggle/`](data/sp
 [`notebooks/01_dataset_analysis.ipynb`](notebooks/01_dataset_analysis.ipynb) and
 [`notebooks/02_data_preprocessing.ipynb`](notebooks/02_data_preprocessing.ipynb).
 
-## 9. Fertilizer and Treatment
+**Setup.** The dataset is **not needed to run the app**. It is needed for most tests, the test scripts
+and training:
+
+1. Download the dataset from Kaggle (link above) and unzip it.
+2. Copy its `train/`, `valid/` and `test/` folders into `Dataset/raw/` in the project folder:
+   ```
+   Dataset/raw/train/<class folders>
+   Dataset/raw/valid/<class folders>
+   Dataset/raw/test/<33 sample images>
+   ```
+3. Do not rename the class folders.
+
+`Dataset/` is git-ignored. The test scripts find held-out images by matching file contents (MD5)
+against [`data/splits_kaggle/`](data/splits_kaggle/), so any complete copy of the Kaggle dataset works.
+
+## 8. Installation on Windows
+
+Tested on Windows 11 with **Python 3.11.9**, Git 2.52 and Git LFS 3.7.
+
+1. Install [Python 3.11](https://www.python.org/downloads/) (tick "Add python.exe to PATH"),
+   [Git](https://git-scm.com/download/win) and [Git LFS](https://git-lfs.com/).
+2. **Clone the project.** The model files are stored with Git LFS, so set up Git LFS first.
+   In PowerShell:
+   ```powershell
+   git lfs install
+   git clone https://github.com/JemisKevadiya/Smart-Crop-Care-System-.git
+   cd Smart-Crop-Care-System-
+   ```
+
+## 9. Virtual Environment and Dependencies
+
+```powershell
+py -3.11 -m venv .venv
+.venv\Scripts\Activate.ps1          # in Command Prompt: .venv\Scripts\activate.bat
+python -m pip install --upgrade pip
+pip install -r requirements.txt
+```
+
+`requirements.txt` lists the packages without fixed versions. The app was tested with:
+
+| Package | Version | Package | Version |
+|---|---|---|---|
+| tensorflow | 2.21.0 | keras | 3.15.1 |
+| streamlit | 1.64.0 | numpy | 2.4.6 |
+| pandas | 3.0.6 | pillow | 12.3.0 |
+| langchain-groq | 1.1.3 | langchain-core | 1.6.7 |
+| groq | 0.37.1 | requests | 2.34.2 |
+| ImageHash | 4.3.2 | scikit-learn | 1.9.1 |
+
+If a newer release causes problems, install these versions. `requirements-docker.txt` pins the
+runtime ones.
+
+## 10. Environment Variables
+
+Settings are read from the environment or from `.env` in the project folder. `.env` is
+git-ignored: never commit it. Key values are never printed or stored by the app.
+
+Copy the template, then put your own keys in `.env`:
+
+```powershell
+Copy-Item .env.example .env
+```
+
+```
+OPENWEATHER_API_KEY=your_openweather_api_key_here
+GROQ_API_KEY=your_groq_api_key_here
+```
+
+| Variable | Required | Purpose |
+|---|---|---|
+| `GROQ_API_KEY` | For the assistant | Agriculture Assistant (free key at console.groq.com). Without it, the app shows that the assistant is unavailable. |
+| `OPENWEATHER_API_KEY` | Optional | Current weather from OpenWeather. Without it, Open-Meteo is used. |
+| `GROQ_MODEL` | Optional | A different Groq model (default `openai/gpt-oss-120b`). |
+| `GROQ_FALLBACK_MODEL` | Optional | Backup model used when the main one is rate-limited (default `openai/gpt-oss-20b`; `none` turns it off). |
+| `NEWS_FEEDS` | Optional | Replaces the default news feeds: `Publisher\|feed URL\|all` entries separated by `;`. |
+| `DISEASE_MODEL` | Optional | `efficientnetb0` (default) or `resnet50`. If the chosen model's files are missing, ResNet50 is used. DenseNet121 cannot be selected. |
+
+Live farmer news needs no API key. Check the setup without showing the keys:
+
+```powershell
+python scripts/check_config.py            # add --online to also test the keys and news feeds
+```
+
+## 11. Model Artifact Setup
+
+The trained models are in the repository; nothing has to be trained to run the app.
+
+| File | Size | Storage |
+|---|---|---|
+| `models/efficientnetb0/best_efficientnetb0.keras` | 46 MB | Git LFS |
+| `models/resnet50/best_resnet50.keras` | 221 MB | Git LFS |
+| `models/densenet121/best_densenet121.keras` | 50 MB | Git LFS (comparison only) |
+| `models/<model>/class_names.npy`, `class_names.json` | small | Git |
+| `models/<model>/leaf_reference.npz` | 21–38 MB | Git |
+
+After cloning, make sure the real model files were downloaded, not only LFS pointers:
+
+```powershell
+git lfs pull
+git lfs ls-files -s           # sizes should be 46 MB, 221 MB and 50 MB
+python scripts/check_config.py
+```
+
+`check_config.py` should report `Disease model: models\efficientnetb0\best_efficientnetb0.keras (46 MB)`
+and 38 classes. A file of only about 130 bytes is an LFS pointer: run `git lfs pull` again.
+
+## 12. Running the App
+
+`app.py` is the entry point. With the virtual environment active:
+
+```powershell
+streamlit run app.py
+```
+
+Then open http://localhost:8501. In the test run the app was ready about 5 seconds after starting.
+
+**Using the app:**
+1. **Weather** page: search for your city or village (or enter coordinates) to set your location.
+2. **Disease detection** page: upload a clear photo of a single leaf. The dashboard shows the
+   disease and confidence, the fertilizer and treatment advice, the weather for your location,
+   farmer news, a summary and the assistant.
+3. Ask the assistant a question, or use the suggested questions. The answer language can be
+   English, Hindi or Gujarati.
+4. **Farmer news** and **Agriculture Assistant** pages give the full news list and a full-page chat.
+
+The first upload takes a few seconds longer while the model loads.
+
+### Run with Docker
+
+The image contains only what the app needs to run: both trained models, the advice table,
+the app code and CPU-only TensorFlow (`requirements-docker.txt`). It contains no dataset,
+notebooks, tests or API keys. The keys are passed in when the container starts.
+
+```powershell
+docker build -t smart-crop-care .
+docker run --rm -p 8501:8501 --env-file .env smart-crop-care
+```
+
+Or, with Docker Compose:
+
+```powershell
+docker compose up --build
+```
+
+Then open http://localhost:8501. If a local copy of the app is already using port 8501, use
+`-p 8502:8501` and open http://localhost:8502. The container used about 550 MB of memory after a
+test with the EfficientNetB0 model (measured on 30 October 2026).
+
+## 13. Testing and Test Status
+
+```powershell
+python -m pytest tests                     # 178 tests
+$env:DISEASE_MODEL="resnet50"; python -m pytest tests; Remove-Item Env:DISEASE_MODEL
+python scripts/test_prediction.py          # model checks on held-out images
+python scripts/test_integration.py         # image -> advice on 380 held-out images
+python scripts/check_config.py --online    # configuration and live services
+```
+
+Most tests and both scripts read images from `Dataset/raw/` (see [Dataset](#7-dataset)). The
+weather, news and chatbot unit tests use mocked services, so they run offline. The two scripts write
+their results to `artifacts/reports/<active model>/`.
+
+**Results on 30 October 2026:**
+
+| Test | Result |
+|---|---|
+| pytest, EfficientNetB0 | 178 passed |
+| pytest, ResNet50 | 178 passed |
+| `scripts/test_prediction.py` | All checks passed; validation accuracy 98.27% (5,430 images); one image per class 37/38 |
+| `scripts/test_integration.py` | 380 held-out images: 98.42%; 9/9 error-handling checks passed |
+| Real-browser end-to-end, local app | 12/12 stages passed |
+| Real-browser end-to-end, Docker | 12/12 stages passed |
+| Real failure cases (wrong keys, no network, missing model) | Handled with clear messages; detection still works offline |
+| Not run | `scripts/build_leaf_reference.py`: it overwrites the model's leaf reference file |
+| Not tested | IP-based location; real Hindi and Gujarati answers |
+
+Full details: [`reports/module_test_results.md`](reports/module_test_results.md),
+[`reports/end_to_end_test.md`](reports/end_to_end_test.md),
+[`reports/model_validation.md`](reports/model_validation.md).
+
+## 14. Troubleshooting
+
+| Problem | What to do |
+|---|---|
+| `Activate.ps1 cannot be loaded because running scripts is disabled` | Use Command Prompt and `.venv\Scripts\activate.bat`, or allow scripts for your user: `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned` |
+| "The disease detection model could not be loaded" | The model file is missing or is an LFS pointer. Run `git lfs pull`, then `python scripts/check_config.py`. |
+| Assistant says "GROQ_API_KEY is not set" or "Groq rejected the API key" | Add or correct `GROQ_API_KEY` in `.env`, then restart the app. |
+| Weather note says Open-Meteo is used | `OPENWEATHER_API_KEY` is missing or not active yet (new keys can take a few hours). The app keeps working with Open-Meteo. |
+| "Live farmer news is temporarily unavailable" | No internet, or all feeds are down. Try **Refresh news** later. |
+| "Port 8501 is already in use" or a Docker "ports are not available" error | Another copy of the app is running. Stop it, or start this one on another port: `streamlit run app.py --server.port 8502` or `docker run -p 8502:8501 ...` |
+| "This image does not look like a leaf…" for a real leaf | Use a clear photo of one leaf of a supported crop that fills most of the picture. |
+| Low-confidence warning | Take a closer, well-lit photo of a single leaf. |
+| TensorFlow prints `oneDNN` or GPU messages at start | These are information messages, not errors. On native Windows TensorFlow runs on the CPU. |
+| Tests fail with "file not found" for images | Download the dataset into `Dataset/raw/` (see [Dataset](#7-dataset)). |
+
+## 15. Known Limitations
+
+- **Image quality and conditions.** The model was trained on PlantVillage-style photos of
+  single leaves on plain backgrounds. Blurry photos, field photos with several leaves,
+  soil or shadows, and early or mixed infections may be less accurate. Accuracy on field photos
+  has not been measured.
+- **Only 14 crops and 38 classes are recognized.** A healthy leaf of an unsupported plant,
+  or a disease outside the 38 classes, cannot be identified correctly. The scope check
+  rejects clear non-leaf images, but a leaf of an unsupported plant may look similar
+  enough to pass.
+- **The prediction can be wrong** even at high confidence. Tomato diseases are the weakest
+  classes.
+- **External services:**
+  - Weather depends on OpenWeather and Open-Meteo being reachable.
+  - News depends on the publishers' feeds being online and keeping their format.
+  - The chatbot depends on Groq and its free-tier rate limits.
+  - IP-based location is approximate, can be off by hundreds of kilometres, and was not tested.
+- **News topics** are assigned by keywords and may sometimes be imprecise.
+- **The chatbot can make mistakes.** It is an LLM and can misread or overstate things,
+  even with the rules in its prompt. Hindi and Gujarati answers were not checked with the live
+  service.
+- **The advice has not been reviewed by an agronomist.** The fertilizer and treatment
+  advice is general guidance. Products, registration and doses differ by region. Verify
+  every recommendation with local agricultural guidance or an extension officer, and
+  follow the product label.
+- **Sessions:**
+  - **Not permanent:** they are kept only in server memory for up to 12 hours and are lost when the app or container restarts. There are no user accounts.
+  - **Shared by link:** the session id is in the page address, so anyone who opens a copied link sees that session (leaf photo, results and chat), and two tabs opened from one link overwrite each other.
+- **Network access.** Streamlit listens on all network interfaces by default, so other computers on
+  the same network can open the app while it runs. Docker publishes the port the same way.
+- **Unpinned dependencies.** `requirements.txt` has no fixed versions, so a future install may get
+  newer packages than the tested ones (see [section 9](#9-virtual-environment-and-dependencies)).
+
+## 16. Future Improvements
+
+None of the following are implemented yet:
+
+- More crops and more disease classes, including crops important in India such as rice,
+  wheat and cotton.
+- Training on real field photos, so the model works better outside the lab setting.
+- A mobile application, with offline detection on the phone.
+- Soil sensor and IoT integration (soil moisture, nutrients) for better fertilizer and
+  irrigation advice.
+- Multimodal disease detection that combines the image with symptoms the farmer
+  describes and with weather.
+- Regional agricultural advisories (state agriculture department and IMD agro-advisories)
+  and local-language news.
+- User accounts with crop history saved over time, which would also replace the shareable
+  session link.
+
+## 17. Contributors
+
+- **Jemis Kevadiya** ([@JemisKevadiya](https://github.com/JemisKevadiya)): repository owner and
+  author of the commits, named in the [LICENSE](LICENSE).
+
+Other team members are not recorded in the repository.
+
+## Appendix A. Module Details
+
+### Fertilizer and Treatment
 
 Advice is **looked up, not generated**. The predicted class name (for example
 `Tomato___Late_blight`) is the key into
@@ -384,7 +602,7 @@ The advice is general guidance from common plant-protection practice. Product
 registration and application rates vary by country, and the app says so next to the
 advice.
 
-## 10. Weather
+### Weather
 
 Weather gives **environmental context for crop-care decisions**, such as when to spray,
 irrigate or work in the field. It does **not** change or confirm the disease prediction.
@@ -409,7 +627,7 @@ The app and the assistant both state this.
   hide the other. Results are cached for 10 minutes. Network and API errors show a message
   instead of crashing.
 
-## 11. Live Farmer News
+### Live Farmer News
 
 - **Sources:** the public RSS feeds of three Indian publishers, read with `requests` (no
   scraping, no API key):
@@ -440,9 +658,10 @@ The app and the assistant both state this.
   - If there is no recent news, the app says "No recent agriculture news available."
   - There is no fake fallback content.
 - The 10 latest headlines (title, source, date and a short summary, never full articles)
-  are saved in the Crop Context for the assistant.
+  are saved in the Crop Context for the assistant. The dashboard summary shows the top-ranked
+  one as "Top agriculture update"; headlines that mention the detected crop are ranked first.
 
-## 12. Agriculture Chatbot
+### Agriculture Chatbot
 
 The **Agriculture Assistant** (`src/chatbot/`) uses Groq's LLM API through LangChain
 (`ChatGroq`). It appears at the bottom of the dashboard and on its own page.
@@ -479,60 +698,7 @@ Other details:
 - A missing or invalid key, timeouts and network errors show "AI assistant is temporarily
   unavailable." with the reason.
 
-## 13. Limitations
-
-- **Image quality and conditions.** The model was trained on PlantVillage-style photos of
-  single leaves on plain backgrounds. Blurry photos, field photos with several leaves,
-  soil or shadows, and early or mixed infections may be less accurate.
-- **Only 14 crops and 38 classes are recognized.** A healthy leaf of an unsupported plant,
-  or a disease outside the 38 classes, cannot be identified correctly. The scope check
-  rejects clear non-leaf images, but a leaf of an unsupported plant may look similar
-  enough to pass.
-- **The prediction can be wrong** even at high confidence. Tomato diseases are the weakest
-  classes.
-- **External services:**
-  - Weather depends on OpenWeather and Open-Meteo being reachable.
-  - News depends on the publishers' feeds being online and keeping their format.
-  - The chatbot depends on Groq and its free-tier rate limits.
-  - IP-based location is approximate and can be off by hundreds of kilometres.
-- **News topics** are assigned by keywords and may sometimes be imprecise.
-- **The chatbot can make mistakes.** It is an LLM and can misread or overstate things,
-  even with the rules in its prompt.
-- **The advice has not been reviewed by an agronomist.** The fertilizer and treatment
-  advice is general guidance. Products, registration and doses differ by region. Verify
-  every recommendation with local agricultural guidance or an extension officer, and
-  follow the product label.
-- **Saved sessions are not permanent.** They are kept only in server memory for up to 12
-  hours and are lost when the app or container restarts. There are no user accounts.
-
-## 14. Future Improvements
-
-None of the following are implemented yet:
-
-- More crops and more disease classes, including crops important in India such as rice,
-  wheat and cotton.
-- Training on real field photos, so the model works better outside the lab setting.
-- A mobile application, with offline detection on the phone.
-- Soil sensor and IoT integration (soil moisture, nutrients) for better fertilizer and
-  irrigation advice.
-- Multimodal disease detection that combines the image with symptoms the farmer
-  describes and with weather.
-- Regional agricultural advisories (state agriculture department and IMD agro-advisories)
-  and local-language news.
-- User accounts with crop history saved over time.
-
-## Tests
-
-```bash
-python -m pytest tests
-python scripts/test_prediction.py      # prediction checks on real images
-python scripts/test_integration.py     # end-to-end checks on 380 test images
-```
-
-Most tests read images from `Dataset/raw/`, so download the dataset first. The weather,
-news and chatbot tests mock the external services, so they run offline.
-
-## Reproduce training (optional)
+## Appendix B. Reproduce Training (optional)
 
 The app's two models were trained on Kaggle:
 
@@ -544,13 +710,13 @@ The app's two models were trained on Kaggle:
    "NO DATA LEAKAGE FOUND".
 3. Copy `models/<model>/` and the reports from the results zip into the project.
 
-A local CPU pipeline also exists (slow: several hours, resumable):
+A local CPU pipeline also exists for ResNet50 (slow: several hours, resumable):
 
-```bash
+```powershell
 python scripts/inspect_dataset.py
 python -m src.preprocessing.splits
 python scripts/train_resnet50.py --evaluate
-python scripts/build_leaf_reference.py    # rebuild the non-leaf reference for the active model
+python scripts/build_leaf_reference.py    # overwrites the active model's leaf reference
 ```
 
 ## License
